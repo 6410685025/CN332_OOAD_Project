@@ -9,6 +9,11 @@
 
 - **Iteration 3 –  use case diagram และ class diagram**  
   👉 [View Presentation](https://www.canva.com/design/DAG_aDzLJkA/266cjUHBc4y0rqxT8fF_Gw/view?utm_content=DAG_aDzLJkA&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hc62ddb5a70)
+  
+- **Iteration 4 –  GUI & CLI**  
+  👉 [View Presentation](https://www.canva.com/design/DAHAEKZlnGw/ZYkHSRz5ktaqcwCcBPNoRg/view?utm_content=DAHAEKZlnGw&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h8b89ea9c49)
+  👉 [link Figma](https://www.figma.com/proto/ozO6fIHf4kVpGhM5CMUrXz/CN332?node-id=0-1&t=bxEUX6ScdwMKQKGM-1)
+  
 
 ---
 ## 🏘 Overview
