@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CondoHub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -200px;
+            right: -200px;
+        }
+
+        .login-left::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            bottom: -100px;
+            left: -100px;
+        }
+
+        .login-left h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            z-index: 1;
+        }
+
+        .login-left p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 400px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .login-left .features {
+            margin-top: 40px;
+            z-index: 1;
+        }
+
+        .login-left .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            font-size: 1rem;
+        }
+
+        .login-left .feature-item i {
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .login-right {
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            background: #fff;
+        }
+
+        .login-right h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .login-right .subtitle {
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-group .input-wrapper {
+            position: relative;
+        }
+
+        .form-group .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .login-left {
+                display: none;
+            }
+
+            .login-right {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-left">
+        <h1><i class="bi bi-building me-3"></i>CondoHub</h1>
+        <p>Your all-in-one condominium management platform</p>
+
+        <div class="features">
+            <div class="feature-item">
+                <i class="bi bi-tools"></i>
+                <span>Report & Track Repairs</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Book Facilities Online</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-box-seam"></i>
+                <span>Package Notifications</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-megaphone"></i>
+                <span>Stay Updated with Announcements</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-right">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to continue to your dashboard</p>
+
+        {% if form.errors %}
+        <div class="error-message">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-person"></i>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock"></i>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login">
+                Sign In <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

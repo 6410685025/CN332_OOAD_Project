@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block page_title %}Lost & Found{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <p class="text-muted mb-0">Report or find lost items in the building</p>
+    {% if user.is_resident %}
+    <a href="{% url 'report_item' %}" class="btn btn-warning">
+        <i class="bi bi-search me-2"></i>Report Item
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Location</th>
+                    <th>Reported</th>
+                    <th>Status</th>
+                    {% if user.is_staff_member %}<th>Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle p-2"
+                                style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                <i class="bi bi-search text-white"></i>
+                            </div>
+                            <div>
+                                <span class="fw-semibold">{{ item.item_name }}</span>
+                                {% if item.description %}
+                                <br><small class="text-muted">{{ item.description|truncatechars:40 }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ item.location }}</td>
+                    <td>{{ item.reported_at|date:"d M Y" }}</td>
+                    <td>
+                        <span class="badge-pill {% if item.status == 'PENDING' %}bg-warning{% else %}bg-success{% endif %}">{{ item.get_status_display }}</span>
+                    </td>
+                    {% if user.is_staff_member %}
+                    <td>
+                        {% if item.status == 'PENDING' %}
+                        <a href="{% url 'resolve_item' item.pk %}" class="btn btn-sm btn-success">
+                            <i class="bi bi-check2 me-1"></i>Resolve
+                        </a>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if user.is_staff_member %}5{% else %}4{% endif %}" class="text-center py-5">
+                        <i class="bi bi-emoji-smile display-4 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No lost items reported</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

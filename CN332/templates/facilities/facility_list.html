@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block page_title %}Facility Booking{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <h2 class="mb-1"><i class="bi bi-building me-2"></i>Facility Booking</h2>
+    <p class="text-secondary mb-4">Browse facilities and check availability</p>
+
+    <div class="row g-4">
+      {% for f in facilities %}
+      <div class="col-md-6">
+        <div class="card h-100 overflow-hidden">
+          <div class="position-relative" style="height: 140px; background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
+            <span class="position-absolute top-0 end-0 m-2 badge-pill {% if forloop.counter|divisibleby:3 %}bg-warning{% else %}bg-success{% endif %}">
+              Available
+            </span>
+            <div class="position-absolute bottom-0 start-0 end-0 p-3 text-white">
+              <h5 class="mb-0">{{ f.name }}</h5>
+            </div>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small mb-2">{{ f.description|default:"Modern facility for residents."|truncatewords:15 }}</p>
+            <p class="small text-muted mb-1"><i class="bi bi-people me-1"></i>Capacity: {{ f.capacity }}</p>
+            <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i>8 AM - 10 PM</p>
+            <a href="{% url 'create_booking' %}?facility={{ f.id }}" class="btn btn-primary w-100 rounded-pill">
+              Check Availability
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center py-5">
+            <i class="bi bi-building display-4 text-muted"></i>
+            <p class="text-muted mt-2">No facilities available</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if is_resident %}
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>My Bookings</span>
+        {% if my_bookings %}<span class="badge bg-primary">{{ my_bookings|length }} Active</span>{% endif %}
+      </div>
+      <div class="card-body p-0">
+        {% for b in my_bookings %}
+        <div class="p-3 border-bottom">
+          <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} text-primary mt-1"></i>
+            <div class="flex-grow-1">
+              <strong class="d-block">{{ b.facility.name }}</strong>
+              <small class="text-muted">{{ b.booking_date|date:"M d, Y" }} · {{ b.time_slot }}</small>
+              <span class="badge-pill mt-1 {% if b.status == 'CONFIRMED' %}bg-success{% elif b.status == 'PENDING' %}bg-warning{% else %}bg-secondary{% endif %}">{{ b.status }}</span>
+            </div>
+          </div>
+          <div class="mt-2 d-flex gap-2">
+            <a href="{% url 'my_bookings' %}" class="btn btn-sm btn-outline-secondary">View</a>
+            {% if b.status != 'CANCELLED' %}
+            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-link text-danger p-0">Cancel</a>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No active bookings</div>
+        {% endfor %}
+      </div>
+      <div class="card-footer bg-transparent">
+        <a href="{% url 'my_bookings' %}" class="btn btn-outline-primary w-100"><i class="bi bi-plus me-1"></i>View All Bookings</a>
+        {% if not my_bookings %}
+        <a href="{% url 'create_booking' %}" class="btn btn-primary w-100 mt-2">Book a facility</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

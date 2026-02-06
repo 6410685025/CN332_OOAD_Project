@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block page_title %}Manage Bookings{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <p class="text-muted mb-0">Review and manage all facility reservations</p>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Facility</th>
+                    <th>Resident</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td><strong>{{ b.facility.name }}</strong></td>
+                    <td>
+                        <span class="d-flex align-items-center gap-2">
+                            <span class="user-avatar" style="width:28px;height:28px;font-size:0.75rem;">{{
+                                b.resident.user.username|slice:":1"|upper }}</span>
+                            Room {{ b.resident.room_number }}
+                        </span>
+                    </td>
+                    <td>{{ b.booking_date|date:"d M Y" }}</td>
+                    <td>{{ b.time_slot }}</td>
+                    <td>
+                        {% if b.status == 'CONFIRMED' %}
+                        <span class="badge bg-success">Confirmed</span>
+                        {% elif b.status == 'PENDING' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif b.status == 'CANCELLED' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Expired</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == 'PENDING' %}
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'confirm_booking' b.pk %}" class="btn btn-sm btn-success">
+                                <i class="bi bi-check"></i> Confirm
+                            </a>
+                            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-x"></i> Reject
+                            </a>
+                        </div>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-calendar-x display-4 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No bookings found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

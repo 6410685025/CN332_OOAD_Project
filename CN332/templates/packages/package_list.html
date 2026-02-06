@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block page_title %}Package Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">{% if user.is_resident %}Track your packages{% else %}Manage deliveries{% endif %}</p>
+  {% if user.is_staff_member %}
+  <a href="{% url 'receive_package' %}" class="btn btn-primary"><i class="bi bi-box-seam me-2"></i>Receive Package</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Sender</th>
+          {% if user.is_staff_member %}<th>Room</th>{% endif %}
+          <th>Arrived</th>
+          <th>Status</th>
+          {% if user.is_staff_member %}<th>Action</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in packages %}
+        <tr>
+          <td><strong>{{ p.sender }}</strong></td>
+          {% if user.is_staff_member %}<td>Unit {{ p.resident.room_number }}</td>{% endif %}
+          <td>{{ p.arrived_at|date:"M d, Y" }} at {{ p.arrived_at|time:"g:i A" }}</td>
+          <td>
+            <span class="badge-pill {% if p.status == 'RECEIVED' %}bg-success{% else %}bg-secondary{% endif %}">
+              {% if p.status == 'RECEIVED' %}Ready for Pickup{% else %}Picked Up{% endif %}
+            </span>
+          </td>
+          {% if user.is_staff_member %}
+          <td>
+            {% if p.status == 'RECEIVED' %}
+            <a href="{% url 'mark_picked_up' p.pk %}" class="btn btn-dark btn-sm">Mark as Picked Up</a>
+            {% else %}
+            <span class="text-muted">{{ p.picked_up_at|date:"M d" }}</span>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if user.is_staff_member %}5{% else %}4{% endif %}" class="text-center py-5 text-muted">No packages</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

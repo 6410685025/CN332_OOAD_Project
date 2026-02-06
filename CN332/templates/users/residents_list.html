@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block page_title %}Residents{% endblock %}
+
+{% block content %}
+<p class="text-secondary mb-4">View resident directory</p>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Building</th>
+          <th>Floor</th>
+          <th>Room</th>
+          <th>Contact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in residents %}
+        <tr>
+          <td>{{ r.user.get_full_name|default:r.user.username }}</td>
+          <td>{{ r.building }}</td>
+          <td>{{ r.floor }}</td>
+          <td>{{ r.room_number }}</td>
+          <td>{{ r.user.email|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-5 text-muted">No residents</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

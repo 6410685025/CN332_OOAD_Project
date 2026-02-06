@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Welcome + summary cards (Figma) -->
+    <h2 class="mb-1">Welcome Back, {{ user.get_full_name|default:user.username }} !</h2>
+    <p class="text-secondary mb-4">Here's what's happening in your residence today</p>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="stat-card blue">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value">{{ pending_packages|default:0 }}</div>
+              <div class="stat-label">Packages Waiting</div>
+            </div>
+            <i class="bi bi-box-seam stat-icon"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card blue">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value">{{ upcoming_bookings_count|default:0 }}</div>
+              <div class="stat-label">Upcoming Booking</div>
+            </div>
+            <i class="bi bi-calendar3 stat-icon"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card blue">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="stat-value">{{ announcements_count|default:0 }}</div>
+              <div class="stat-label">New Announcements</div>
+            </div>
+            <i class="bi bi-megaphone stat-icon"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Latest Announcements -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Latest Announcements</span>
+        <a href="{% url 'announcement_list' %}" class="btn btn-sm btn-link text-primary text-decoration-none p-0">View All</a>
+      </div>
+      <div class="card-body p-0">
+        {% for ann in recent_announcements %}
+        <div class="p-3 border-bottom announcement-card announcement-card-{{ forloop.counter0|divisibleby:4|yesno:'0,1' }}" style="{% if forloop.counter0 == 0 %}background: #f0f9ff;{% elif forloop.counter0 == 1 %}background: #f0fdf4;{% elif forloop.counter0 == 2 %}background: #fffbeb;{% else %}background: #faf5ff;{% endif %}">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <strong class="d-block">{{ ann.title }}</strong>
+              <small class="text-secondary">{{ ann.content|truncatewords:20 }}</small>
+              <small class="d-block mt-1 text-muted"><i class="bi bi-person me-1"></i>{% if ann.author %}{{ ann.author.user.get_full_name|default:ann.author.user.username }}{% else %}Building Management{% endif %}</small>
+            </div>
+            <small class="text-muted">{{ ann.publish_date|date:"M d, Y" }}</small>
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No announcements</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Package Tracking -->
+    <div class="card">
+      <div class="card-header">Package Tracking</div>
+      <div class="card-body p-0">
+        {% for pkg in resident_packages %}
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+          <div>
+            <strong class="d-block">{{ pkg.sender }}</strong>
+            <small class="text-muted">
+              {% if pkg.status == 'PICKED_UP' %}Picked up on {{ pkg.picked_up_at|date:"M d, Y" }}{% else %}Arrived on {{ pkg.arrived_at|date:"M d, Y" }} at {{ pkg.arrived_at|time:"g:i A" }}{% endif %}
+            </small>
+            <small class="d-block text-muted">Package ID: #PKG-{{ pkg.id }}</small>
+          </div>
+          <span class="badge-pill {% if pkg.status == 'RECEIVED' %}bg-success{% else %}bg-secondary{% endif %}">
+            {% if pkg.status == 'RECEIVED' %}Ready for Pickup{% else %}Picked Up{% endif %}
+          </span>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No packages</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right sidebar: Upcoming Bookings (Figma) -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Upcoming Bookings</div>
+      <div class="card-body p-0">
+        {% for b in upcoming_bookings %}
+        <div class="p-3 border-bottom" style="{% if forloop.counter0 == 0 %}background: #f0f9ff;{% elif forloop.counter0 == 1 %}background: #faf5ff;{% else %}background: #fffbeb;{% endif %}">
+          <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} mt-1 text-primary"></i>
+            <div>
+              <strong class="d-block">{{ b.facility.name }}</strong>
+              <small class="text-muted">{{ b.booking_date|date:"M d, Y" }}</small><br>
+              <small class="text-muted">{{ b.time_slot }}</small>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No upcoming bookings</div>
+        {% endfor %}
+      </div>
+      <div class="card-footer bg-transparent border-0">
+        <a href="{% url 'my_bookings' %}" class="btn btn-sm btn-outline-primary w-100">View All Bookings</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

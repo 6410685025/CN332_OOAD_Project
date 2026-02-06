@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block page_title %}Assign Technician{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-plus me-2"></i>Assign Technician to Repair #{{ repair.id }}
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-light mb-4">
+                    <p class="mb-1"><strong>Location:</strong> {{ repair.location }}</p>
+                    <p class="mb-0"><strong>Issue:</strong> {{ repair.description|truncatechars:100 }}</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Select Technician</label>
+                        {{ form.technician }}
+                        <div class="form-text">Only available technicians are shown</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-2"></i>Assign
+                        </button>
+                        <a href="{% url 'repair_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

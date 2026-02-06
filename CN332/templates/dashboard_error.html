@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Access Error{% endblock %}
+
+{% block content %}
+<div class="alert alert-warning text-center mt-5">
+    <h4>No Profile Found</h4>
+    <p>Your account does not have a Resident, Staff, or Technician profile.</p>
+    {% if user.is_superuser %}
+    <a href="/admin/" class="btn btn-primary">Go to Admin Panel</a>
+    {% endif %}
+</div>
+{% endblock %}

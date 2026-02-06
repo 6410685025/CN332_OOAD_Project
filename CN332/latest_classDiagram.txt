@@ -1,0 +1,196 @@
+classDiagram
+
+%% =========================
+%% Abstract User
+%% =========================
+class User {
+  <<abstract>>
+  -String userId
+  -String name
+  -String contact
+}
+
+class Resident {
+  -String roomNumber
+  -String building
+  -String floor
+  +reportRepair()
+  +bookFacility()
+  +confirmBooking()
+  +reportLostItem()
+  +receivePackage()
+  +viewAnnouncements()
+  +rateRepair()
+}
+
+class Staff {
+  -String staffId
+  -String position
+  +assignRepairRequest()
+  +managePackage()
+  +publishAnnouncement()
+  +reviewLostFound()
+}
+
+class Technician {
+  -String technicianId
+  -String availability
+  +acceptRepair()
+  +updateRepairStatus()
+  +fixProblem()
+}
+
+User <|-- Resident
+User <|-- Staff
+User <|-- Technician
+
+%% =========================
+%% Repair / Complaint
+%% =========================
+class RepairRequest {
+  -String requestId
+  -RepairType type
+  -String description
+  -String location
+  -RepairStatus status
+  -DateTime createdAt
+  -Int rating
+  +updateStatus()
+  +closeRequest()
+}
+
+class WorkLog {
+  -String logId
+  -String description
+  -DateTime timestamp
+  +addLog()
+}
+
+Resident "1" -- "*" RepairRequest : creates
+Technician "1" -- "*" RepairRequest : handles
+Staff "1" -- "*" RepairRequest : assigns
+RepairRequest "1" o-- "*" WorkLog : has
+
+%% === ENUM RELATIONSHIPS (Repair) ===
+RepairRequest --> RepairType : typed_by
+RepairRequest --> RepairStatus : has
+
+%% =========================
+%% Facility Booking
+%% =========================
+class Facility {
+  -String facilityId
+  -String name
+  -FacilityType type
+  -Int capacity
+  +checkAvailability()
+}
+
+class Booking {
+  -String bookingId
+  -DateTime bookingDate
+  -String timeSlot
+  -BookingStatus status
+  +confirm()
+  +cancel()
+}
+
+Resident "1" -- "*" Booking : makes
+Booking "*" -- "1" Facility : booked_for
+
+%% === ENUM RELATIONSHIPS (Facility / Booking) ===
+Facility --> FacilityType : categorized_as
+Booking --> BookingStatus : has
+
+%% =========================
+%% Package
+%% =========================
+class Package {
+  -String packageId
+  -String sender
+  -PackageStatus status
+  +markReceived()
+  +markPickedUp()
+}
+
+Staff "1" -- "*" Package : manages
+Resident "1" -- "*" Package : receives
+
+%% === ENUM RELATIONSHIPS (Package) ===
+Package --> PackageStatus : has
+
+%% =========================
+%% Announcement
+%% =========================
+class Announcement {
+  -String announcementId
+  -String title
+  -String content
+  -DateTime publishDate
+  +publish()
+}
+
+Staff "1" -- "*" Announcement : publishes
+Resident "1" -- "*" Announcement : views
+
+%% =========================
+%% Lost & Found
+%% =========================
+class LostFound {
+  -String itemId
+  -String description
+  -String location
+  -LostFoundStatus status
+  +submitReport()
+  +resolveItem()
+}
+
+Resident "1" -- "*" LostFound : reports
+Staff "1" -- "*" LostFound : reviews
+
+%% === ENUM RELATIONSHIPS (Lost & Found) ===
+LostFound --> LostFoundStatus : has
+
+%% =========================
+%% ENUMS (Domain State)
+%% =========================
+class RepairType {
+  <<enumeration>>
+  MAINTENANCE
+  COMPLAINT
+}
+
+class RepairStatus {
+  <<enumeration>>
+  PENDING
+  ON_PROCESS
+  COMPLETED
+}
+
+class FacilityType {
+  <<enumeration>>
+  SWIMMING_POOL
+  GYM
+  MEETING_ROOM
+  PLAYGROUND
+}
+
+class BookingStatus {
+  <<enumeration>>
+  PENDING
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+class LostFoundStatus {
+  <<enumeration>>
+  PENDING
+  RESOLVED
+}
+
+class PackageStatus {
+  <<enumeration>>
+  RECEIVED
+  PICKED_UP
+}

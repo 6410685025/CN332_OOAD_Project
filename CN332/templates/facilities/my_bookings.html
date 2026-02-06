@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block page_title %}My Bookings{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <p class="text-muted mb-0">View and manage your facility reservations</p>
+  <a href="{% url 'create_booking' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>New Booking</a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr>
+          <th>Facility</th>
+          <th>Date</th>
+          <th>Time Slot</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} text-primary"></i>
+              <span class="fw-semibold">{{ b.facility.name }}</span>
+            </div>
+          </td>
+          <td>{{ b.booking_date|date:"M d, Y" }}</td>
+          <td>{{ b.time_slot }}</td>
+          <td>
+            <span class="badge-pill {% if b.status == 'CONFIRMED' %}bg-success{% elif b.status == 'PENDING' %}bg-warning{% elif b.status == 'CANCELLED' %}bg-danger{% else %}bg-secondary{% endif %}">
+              {{ b.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% if b.status == 'PENDING' %}
+            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-outline-danger">Cancel</a>
+            {% elif b.status == 'CANCELLED' %}
+            <a href="#" class="btn btn-sm btn-link text-primary p-0">View Details</a>
+            {% else %}
+            <a href="{% url 'facility_list' %}" class="btn btn-sm btn-outline-secondary">View</a>
+            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-link text-danger p-0">Cancel</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center py-5 text-muted">No bookings yet</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

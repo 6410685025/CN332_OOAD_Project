@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<p class="text-secondary mb-4">Manage residential operations and requests</p>
+
+<!-- Stats Row (Figma: 4 cards) -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card orange">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <small class="opacity-90">+{{ recent_repairs_today|default:0 }} Today</small>
+          <div class="stat-value">{{ pending_repairs|default:0 }}</div>
+          <div class="stat-label">Pending Repairs</div>
+        </div>
+        <i class="bi bi-wrench stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card blue">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <small class="opacity-90">+{{ packages_today|default:0 }} Today</small>
+          <div class="stat-value">{{ pending_packages|default:0 }}</div>
+          <div class="stat-label">Unclaimed Packages</div>
+        </div>
+        <i class="bi bi-box-seam stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card purple">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="badge bg-light text-dark mb-1">Live</span>
+          <div class="stat-value">{{ active_announcements|default:0 }}</div>
+          <div class="stat-label">Active Announcements</div>
+        </div>
+        <i class="bi bi-megaphone stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card green">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="badge bg-light text-dark mb-1">Active</span>
+          <div class="stat-value">{{ pending_lost_found|default:0 }}</div>
+          <div class="stat-label">Open Lost & Found</div>
+        </div>
+        <i class="bi bi-search stat-icon"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <!-- Repair Requests table -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+          <h6 class="mb-0">Repair Requests</h6>
+          <small class="text-muted">Manage maintenance and complaint tickets.</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-funnel me-1"></i>Filter</button>
+          <a href="{% url 'repair_list' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus me-1"></i>New Request</a>
+        </div>
+      </div>
+      <div class="card-body p-0 overflow-auto">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for repair in recent_repairs %}
+            <tr>
+              <td>REQ-{{ repair.id }}</td>
+              <td>
+                <span class="badge-pill {% if repair.type == 'COMPLAINT' %}bg-warning{% else %}bg-info{% endif %}">
+                  {{ repair.get_request_type_display }}
+                </span>
+              </td>
+              <td>{{ repair.location }}</td>
+              <td>
+                <span class="badge-pill {% if repair.status == 'COMPLETED' %}bg-success{% elif repair.status == 'ON_PROCESS' %}bg-info{% else %}bg-warning{% endif %}">
+                  {{ repair.get_status_display }}
+                </span>
+              </td>
+              <td>
+                {% if repair.status == 'PENDING' %}
+                <a href="{% url 'assign_technician' repair.pk %}" class="btn btn-sm btn-outline-primary">Assign Technician</a>
+                {% else %}
+                <a href="{% url 'repair_detail' repair.pk %}" class="btn btn-sm btn-outline-secondary">View Details</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No repair requests</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+        <small class="text-muted">Showing {{ recent_repairs|length }} of {{ total_repairs|default:0 }} requests</small>
+        <a href="{% url 'repair_list' %}" class="btn btn-link btn-sm p-0">View All Requests <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+
+    <!-- Package cards (Mark as Picked Up) -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Recent Packages</span>
+        <a href="{% url 'package_list' %}" class="btn btn-link btn-sm p-0">View All</a>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {% for pkg in recent_packages %}
+          <div class="col-md-6">
+            <div class="card border h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-start gap-2">
+                  <i class="bi bi-box-seam text-primary fs-4"></i>
+                  <div class="flex-grow-1">
+                    <strong>#PKG-{{ pkg.id }}</strong>
+                    <div class="small text-muted">Unit {{ pkg.resident.room_number }}</div>
+                    <div class="small">{{ pkg.resident.user.get_full_name|default:pkg.resident.user.username }}</div>
+                    <div class="small text-muted">Received {{ pkg.arrived_at|date:"M d, g:i A" }}</div>
+                    <a href="{% url 'mark_picked_up' pkg.pk %}" class="btn btn-dark btn-sm mt-2">Mark as Picked Up</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="col-12 text-center text-muted py-3">No packages waiting</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions sidebar -->
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Quick Actions</div>
+      <div class="card-body d-flex flex-column gap-2">
+        <a href="{% url 'create_announcement' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-megaphone text-primary me-2"></i>New Announcement</span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+        <a href="{% url 'lost_found_list' %}" class="btn btn-outline-secondary d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-search text-success me-2"></i>Review Lost & Found</span>
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

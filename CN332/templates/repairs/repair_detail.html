@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block page_title %}Repair #{{ repair.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-tools me-2"></i>Repair Details</span>
+                {% if repair.status == 'PENDING' %}
+                <span class="badge-pill bg-warning">Pending</span>
+                {% elif repair.status == 'ON_PROCESS' %}
+                <span class="badge-pill bg-info">In Progress</span>
+                {% elif repair.status == 'COMPLETED' %}
+                <span class="badge-pill bg-success">Completed</span>
+                {% else %}
+                <span class="badge-pill bg-secondary">Cancelled</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Type</p>
+                        <p class="fw-semibold">{{ repair.get_request_type_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Location</p>
+                        <p class="fw-semibold">{{ repair.location }}</p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <p class="text-muted mb-1">Description</p>
+                    <p>{{ repair.description }}</p>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="text-muted mb-1">Reported by</p>
+                        <p class="fw-semibold">Room {{ repair.resident.room_number }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-muted mb-1">Technician</p>
+                        <p class="fw-semibold">{% if repair.technician %}{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}{% else %}Not assigned{% endif %}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-muted mb-1">Created</p>
+                        <p class="fw-semibold">{{ repair.created_at|date:"d M Y, H:i" }}</p>
+                    </div>
+                </div>
+                {% if repair.rating %}
+                <div class="mt-3 p-3 bg-light rounded">
+                    <p class="text-muted mb-1">Rating</p>
+                    <p class="mb-0">
+                        {% for i in "12345" %}
+                        {% if forloop.counter <= repair.rating %} <i class="bi bi-star-fill text-warning"></i>
+                            {% else %}
+                            <i class="bi bi-star text-muted"></i>
+                            {% endif %}
+                            {% endfor %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white d-flex gap-2">
+                <a href="{% url 'repair_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back
+                </a>
+                {% if user.is_staff_member and not repair.technician %}
+                <a href="{% url 'assign_technician' repair.pk %}" class="btn btn-primary">
+                    <i class="bi bi-person-plus me-2"></i>Assign Technician
+                </a>
+                {% endif %}
+                {% if user.is_technician and repair.technician.user == user and repair.status != 'COMPLETED' %}
+                <a href="{% url 'update_repair_status' repair.pk %}" class="btn btn-info">
+                    <i class="bi bi-pencil me-2"></i>Update Status
+                </a>
+                {% endif %}
+                {% if user.is_resident and repair.status == 'COMPLETED' and not repair.rating %}
+                <a href="{% url 'rate_repair' repair.pk %}" class="btn btn-warning">
+                    <i class="bi bi-star me-2"></i>Rate Service
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Work Log
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for log in logs %}
+                    <li class="list-group-item">
+                        <small class="text-muted">{{ log.timestamp|date:"d M Y, H:i" }}</small>
+                        <p class="mb-0">{{ log.description }}</p>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">No activity yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
