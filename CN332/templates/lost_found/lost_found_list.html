@@ -31,6 +31,7 @@
         padding: 10px 20px;
         border: none;
         cursor: pointer;
+        text-decoration: none;
     }
 
     .btn-report-new:hover {
@@ -579,13 +580,6 @@
   </div>
 
   {% else %}
-  <!-- RESIDENT VIEW - CARD LAYOUT -->
-  <div class="lostfound-header">
-    <div class="lostfound-title"><i class="bi bi-search"></i>Lost & Found</div>
-    <a href="{% url 'report_item' %}" class="btn-report-new">
-      <i class="bi bi-plus-lg me-2"></i>+ Report New Item
-    </a>
-  </div>
 
   <!-- Filters -->
   <div class="filters-row">
@@ -596,7 +590,9 @@
     <button class="filter-btn active" data-filter="all">All Item</button>
     <button class="filter-btn" data-filter="lost">Lost</button>
     <button class="filter-btn" data-filter="found">Found</button>
-    <button class="filter-btn" data-filter="filters"><i class="bi bi-funnel"></i>Filters</button>
+    <a href="{% url 'report_item' %}" class="btn-report-new">
+      <i class="bi bi-plus-lg me-2"></i> Report New Item
+    </a>
   </div>
 
   <!-- Items Grid -->

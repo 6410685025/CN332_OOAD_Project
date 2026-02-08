@@ -355,6 +355,74 @@
         {% endfor %}
       </div>
     </div>
+
+    <!-- Recent Repairs -->
+    <div class="card dashboard-card mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center dashboard-card-header">
+        <span>Recent Repairs</span>
+        <a href="{% url 'repair_list' %}" class="view-all-link">View All</a>
+      </div>
+      <div class="card-body dashboard-card-body">
+        {% for repair in recent_repairs %}
+        <div class="dashboard-item-card {% if repair.status == 'PENDING' %}orange{% elif repair.status == 'ON_PROCESS' %}blue{% else %}green{% endif %}">
+          <div class="d-flex align-items-start gap-2">
+            <div class="booking-icon">
+              <i class="bi bi-{% if repair.request_type == 'COMPLAINT' %}exclamation-triangle{% else %}wrench{% endif %} {% if repair.status == 'PENDING' %}orange{% elif repair.status == 'ON_PROCESS' %}blue{% else %}green{% endif %}"></i>
+            </div>
+            <div class="flex-grow-1" style="min-width: 0;">
+              <div class="booking-name">{{ repair.description|truncatewords:8 }}</div>
+              <div class="booking-date">
+                <i class="bi bi-tag"></i>
+                <span>{{ repair.get_request_type_display }}</span>
+              </div>
+              <div class="booking-time">
+                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                <span>{{ repair.get_status_display }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No repair requests</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Lost & Found -->
+    <div class="card dashboard-card mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center dashboard-card-header">
+        <span>Lost & Found</span>
+        <a href="{% url 'lost_found_list' %}" class="view-all-link">View All</a>
+      </div>
+      <div class="card-body dashboard-card-body">
+        {% for item in recent_lost_found %}
+        <div class="dashboard-item-card {% if item.item_type == 'LOST' %}orange{% else %}blue{% endif %}">
+          <div class="d-flex align-items-start gap-3">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.item_name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; flex-shrink: 0;">
+            {% else %}
+            <div style="width: 60px; height: 60px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: {% if item.item_type == 'LOST' %}#fffbeb{% else %}#f0f9ff{% endif %}; border: 2px solid {% if item.item_type == 'LOST' %}#f59e0b{% else %}#3b82f6{% endif %};">
+              <i class="bi bi-{% if item.item_type == 'LOST' %}search{% else %}box{% endif %}" style="font-size: 1.5rem; color: {% if item.item_type == 'LOST' %}#f59e0b{% else %}#3b82f6{% endif %};"></i>
+            </div>
+            {% endif %}
+            <div class="flex-grow-1" style="min-width: 0;">
+              <div class="booking-name">{{ item.item_name }}</div>
+              <div class="booking-date">
+                <i class="bi bi-tag"></i>
+                <span>{{ item.get_item_type_display }}</span>
+              </div>
+              <div class="booking-time">
+                <i class="bi bi-geo-alt"></i>
+                <span>{{ item.location|truncatewords:5 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-4 text-center text-muted">No lost & found items</div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
