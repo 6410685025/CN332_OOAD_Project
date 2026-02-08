@@ -3,8 +3,8 @@ from .models import Facility, Booking
 
 @admin.register(Facility)
 class FacilityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'facility_type', 'capacity')
-    list_filter = ('facility_type',)
+    list_display = ('name', 'facility_type', 'capacity', 'is_open', 'image')
+    list_filter = ('facility_type', 'is_open')
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):

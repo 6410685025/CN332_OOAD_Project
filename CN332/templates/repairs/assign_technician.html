@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 
-{% block page_title %}Assign Technician{% endblock %}
+{% block page_title %}{% if is_complaint %}Assign Staff{% else %}Assign Technician{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <i class="bi bi-person-plus me-2"></i>Assign Technician to Repair #{{ repair.id }}
+                <i class="bi bi-person-plus me-2"></i>{% if is_complaint %}Assign Staff{% else %}Assign Technician{% endif %} to Repair #{{ repair.id }}
             </div>
             <div class="card-body p-4">
                 <div class="alert alert-light mb-4">
+                    <p class="mb-1"><strong>Type:</strong> {{ repair.get_request_type_display }}</p>
                     <p class="mb-1"><strong>Location:</strong> {{ repair.location }}</p>
                     <p class="mb-0"><strong>Issue:</strong> {{ repair.description|truncatechars:100 }}</p>
                 </div>
@@ -19,9 +20,15 @@
                     {% csrf_token %}
 
                     <div class="mb-4">
+                        {% if is_complaint %}
+                        <label class="form-label fw-semibold">Select Staff Member</label>
+                        {{ form.assigned_staff }}
+                        <div class="form-text">Select a staff member to handle this complaint</div>
+                        {% else %}
                         <label class="form-label fw-semibold">Select Technician</label>
                         {{ form.technician }}
                         <div class="form-text">Only available technicians are shown</div>
+                        {% endif %}
                     </div>
 
                     <div class="d-flex gap-2">

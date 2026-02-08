@@ -13,6 +13,8 @@ class Facility(models.Model):
     facility_type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     capacity = models.IntegerField()
     description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='facility_images/', blank=True, null=True)
+    is_open = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.name} ({self.get_facility_type_display()})"

@@ -2,41 +2,475 @@
 
 {% block page_title %}Community Announcements{% endblock %}
 
+{% block extra_css %}
+<style>
+  .announcements-page {
+    padding: 8px 4px 24px;
+  }
+
+  .announcements-header {
+    margin-bottom: 24px;
+  }
+
+  .announcements-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .announcements-subtitle {
+    font-size: 0.95rem;
+    color: #6b7280;
+    margin-bottom: 24px;
+  }
+
+  .announcements-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 14px;
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .search-bar input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.9rem;
+    background: transparent;
+  }
+
+  .search-bar input::placeholder {
+    color: #9ca3af;
+  }
+
+  .category-select {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #374151;
+    min-width: 150px;
+  }
+
+  .category-select:focus {
+    outline: none;
+    border-color: #5b5bff;
+  }
+
+  .announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .announcement-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .announcement-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .announcement-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 16px;
+  }
+
+  .announcement-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .badge-tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .badge-new {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .badge-emergency {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .badge-general {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .badge-maintenance {
+    background: #fef3c7;
+    color: #78350f;
+  }
+
+  .badge-events {
+    background: #f3e8ff;
+    color: #6b21a8;
+  }
+
+  .badge-policies {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .announcement-date {
+    font-size: 0.85rem;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  .announcement-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .announcement-content {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .announcement-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .attachment-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .read-more-link {
+    color: #5b5bff;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .read-more-link:hover {
+    color: #4f46e5;
+  }
+
+  .no-announcements {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .no-announcements-icon {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 16px;
+  }
+
+  .no-announcements-text {
+    color: #9ca3af;
+    font-size: 0.95rem;
+  }
+
+  /* Modal Styles */
+  .announcement-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .announcement-modal-overlay.active {
+    display: flex;
+  }
+
+  .announcement-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .announcement-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+  }
+
+  .announcement-modal-close:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+  }
+
+  .modal-category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .modal-title-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .modal-date {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .modal-content {
+    font-size: 0.95rem;
+    color: #374151;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+</style>
+{% endblock %}
+
 {% block content %}
-<h2 class="mb-1">Community Announcements</h2>
-<p class="text-secondary mb-4">Stay updated with the latest news and information from your community</p>
-
-<div class="d-flex gap-2 mb-4">
-  <div class="input-group flex-grow-1" style="max-width: 400px;">
-    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-    <input type="search" class="form-control" placeholder="Search announcements...">
-  </div>
-  <select class="form-select" style="width: auto;">
-    <option>All Categories</option>
-  </select>
-</div>
-
-{% for a in announcements %}
-<div class="card mb-3">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+<div class="announcements-page">
+  <div class="announcements-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
       <div>
-        <span class="badge-pill bg-info me-2 small">General</span>
-        <h5 class="card-title mb-1 mt-1">{{ a.title }}</h5>
+        <h2 class="announcements-title">Community Announcements</h2>
+        <p class="announcements-subtitle">Stay updated with the latest news and important information from your community</p>
       </div>
-      <small class="text-muted">{{ a.publish_date|date:"M d, Y" }}</small>
+      {% if user.is_staff_member %}
+      <a href="{% url 'create_announcement' %}" class="btn btn-primary" style="margin-top: 4px;">
+        <i class="bi bi-plus-circle"></i> Create Announcement
+      </a>
+      {% endif %}
     </div>
-    <p class="card-text text-secondary mt-2">{{ a.content|truncatewords:25 }}</p>
-    <small class="text-muted"><i class="bi bi-person me-1"></i>{% if a.author %}{{ a.author.user.get_full_name|default:a.author.user.username }}{% else %}Management{% endif %}</small>
-    <a href="#" class="btn btn-link btn-sm p-0 mt-2">Read more <i class="bi bi-arrow-right"></i></a>
+  </div>
+
+  <div class="announcements-controls">
+    <div class="search-bar">
+      <i class="bi bi-search" style="color: #9ca3af;"></i>
+      <input type="search" id="searchInput" placeholder="Search by ID, location, or type...">
+    </div>
+    <select class="category-select" id="categoryFilter">
+      <option value="">All Categories</option>
+      <option value="GENERAL">General</option>
+      <option value="EMERGENCY">Emergency</option>
+      <option value="MAINTENANCE">Maintenance</option>
+      <option value="EVENTS">Events</option>
+      <option value="POLICIES">Policies</option>
+    </select>
+  </div>
+
+  <div class="announcements-list">
+    {% for a in announcements %}
+    <div class="announcement-card" data-category="{{ a.category }}">
+      <div class="announcement-header">
+        <div class="announcement-tags">
+          {% if a.category == 'EMERGENCY' %}
+          <span class="badge-tag badge-new"><i class="bi bi-exclamation-circle"></i>NEW</span>
+          <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
+          {% elif a.category == 'GENERAL' %}
+          <span class="badge-tag badge-new"><i class="bi bi-exclamation-circle"></i>NEW</span>
+          <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
+          {% else %}
+          <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
+          {% endif %}
+        </div>
+        <div class="announcement-date">{{ a.publish_date|date:"M d, Y" }}</div>
+      </div>
+
+      <h3 class="announcement-title">{{ a.title }}</h3>
+      
+      <p class="announcement-content">{{ a.content|truncatewords:30 }}</p>
+
+      <div class="announcement-footer">
+        <div class="attachment-info">
+          <i class="bi bi-paperclip"></i>
+          <span>2 attachments</span>
+        </div>
+        <a href="#" class="read-more-link" data-announcement-id="{{ a.id }}" onclick="openAnnouncementModal({{ a.id }}, event)">Read more <i class="bi bi-arrow-right"></i></a>
+      </div>
+      
+      <!-- Hidden data for modal -->
+      <div class="announcement-full-content" id="content-{{ a.id }}" style="display: none;">
+        <div class="modal-title-text">{{ a.title }}</div>
+        <div class="modal-category">{{ a.get_category_display }}</div>
+        <div class="modal-date">{{ a.publish_date|date:"M d, Y H:i" }}</div>
+        <div class="modal-content">{{ a.content }}</div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="no-announcements">
+      <div class="no-announcements-icon">
+        <i class="bi bi-megaphone"></i>
+      </div>
+      <p class="no-announcements-text">No announcements yet</p>
+    </div>
+    {% endfor %}
   </div>
 </div>
-{% empty %}
-<div class="card">
-  <div class="card-body text-center py-5">
-    <i class="bi bi-megaphone display-4 text-muted"></i>
-    <p class="text-muted mt-2 mb-0">No announcements yet</p>
+
+<!-- Announcement Detail Modal -->
+<div class="announcement-modal-overlay" id="announcementModal">
+  <div class="announcement-modal">
+    <button class="announcement-modal-close" onclick="closeAnnouncementModal()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <div id="modalCategoryBadge" class="modal-category-badge"></div>
+    <div id="modalTitle" class="modal-title-text"></div>
+    <div id="modalDate" class="modal-date"></div>
+    <div id="modalContent" class="modal-content"></div>
   </div>
 </div>
-{% endfor %}
+
+<script>
+function openAnnouncementModal(announcementId, event) {
+  event.preventDefault();
+  
+  const card = document.querySelector(`[data-announcement-id="${announcementId}"]`)?.closest('.announcement-card');
+  if (!card) return;
+
+  const titleElement = card.querySelector('.announcement-title');
+  const contentElement = card.querySelector('.announcement-content');
+  const categoryElement = card.querySelector('.badge-tag:not(.badge-new)');
+  const dateElement = card.querySelector('.announcement-date');
+
+  const title = titleElement?.textContent || '';
+  const content = contentElement?.textContent || '';
+  const category = categoryElement?.textContent.trim() || '';
+  const date = dateElement?.textContent || '';
+
+  // Set modal content
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalContent').textContent = card.querySelector('.announcement-card')?.getAttribute('data-full-content') || content;
+  document.getElementById('modalDate').textContent = date;
+  
+  // Set category badge
+  const categoryBadge = document.getElementById('modalCategoryBadge');
+  const categoryClass = card.getAttribute('data-category').toLowerCase();
+  categoryBadge.textContent = category;
+  categoryBadge.className = `modal-category-badge badge-${categoryClass}`;
+
+  // Show modal
+  const modal = document.getElementById('announcementModal');
+  modal.classList.add('active');
+
+  // Close modal on overlay click
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeAnnouncementModal();
+    }
+  });
+}
+
+function closeAnnouncementModal() {
+  const modal = document.getElementById('announcementModal');
+  modal.classList.remove('active');
+}
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeAnnouncementModal();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const cards = document.querySelectorAll('.announcement-card');
+
+  function filterAnnouncements() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+
+    cards.forEach(card => {
+      const category = card.dataset.category;
+      const title = card.querySelector('.announcement-title').textContent.toLowerCase();
+      const content = card.querySelector('.announcement-content').textContent.toLowerCase();
+
+      const categoryMatch = !selectedCategory || category === selectedCategory;
+      const searchMatch = !searchTerm || title.includes(searchTerm) || content.includes(searchTerm);
+
+      card.style.display = categoryMatch && searchMatch ? '' : 'none';
+    });
+  }
+
+  searchInput.addEventListener('input', filterAnnouncements);
+  categoryFilter.addEventListener('change', filterAnnouncements);
+});
+</script>
 {% endblock %}

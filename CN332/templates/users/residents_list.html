@@ -3,7 +3,15 @@
 {% block page_title %}Residents{% endblock %}
 
 {% block content %}
-<p class="text-secondary mb-4">View resident directory</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2>Residents</h2>
+    <p class="text-secondary mb-0">View resident directory</p>
+  </div>
+  <button type="button" class="btn btn-primary" onclick="openResidentModal()">
+    <i class="bi bi-plus-circle"></i> Create Resident
+  </button>
+</div>
 
 <div class="card">
   <div class="card-body p-0">
@@ -17,7 +25,7 @@
           <th>Contact</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="residents-table-body">
         {% for r in residents %}
         <tr>
           <td>{{ r.user.get_full_name|default:r.user.username }}</td>
@@ -33,4 +41,253 @@
     </table>
   </div>
 </div>
+
+<!-- Create Resident Modal -->
+<div id="residentModal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create New Resident</h5>
+        <button type="button" class="btn-close" onclick="closeResidentModal()"></button>
+      </div>
+      <div class="modal-body">
+        <form id="residentForm">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="firstName" class="form-label">First Name *</label>
+                <input type="text" class="form-control" id="firstName" name="first_name" required>
+                <div class="invalid-feedback" id="firstName-error"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name *</label>
+                <input type="text" class="form-control" id="lastName" name="last_name" required>
+                <div class="invalid-feedback" id="lastName-error"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email *</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+            <div class="invalid-feedback" id="email-error"></div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username *</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+                <div class="invalid-feedback" id="username-error"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="contactNumber" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" id="contactNumber" name="contact_number">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="password" class="form-label">Password *</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+                <div class="invalid-feedback" id="password-error"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="passwordConfirm" class="form-label">Confirm Password *</label>
+                <input type="password" class="form-control" id="passwordConfirm" name="password_confirm" required>
+                <div class="invalid-feedback" id="password_confirm-error"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="building" class="form-label">Building *</label>
+                <input type="text" class="form-control" id="building" name="building" placeholder="e.g., Building A" required>
+                <div class="invalid-feedback" id="building-error"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="floor" class="form-label">Floor *</label>
+                <input type="number" class="form-control" id="floor" name="floor" required>
+                <div class="invalid-feedback" id="floor-error"></div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="roomNumber" class="form-label">Room Number *</label>
+                <input type="text" class="form-control" id="roomNumber" name="room_number" required>
+                <div class="invalid-feedback" id="room_number-error"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="formError" class="alert alert-danger d-none" role="alert"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeResidentModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitResidentForm()">
+          <span id="submitBtn">Create Resident</span>
+          <span id="submitSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div id="residentModalBackdrop" class="modal-backdrop fade" style="display: none;"></div>
+
+<style>
+  #residentModal {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  #residentModal.show {
+    display: block;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: 0.5;
+  }
+</style>
+
+<script>
+  function openResidentModal() {
+    document.getElementById('residentForm').reset();
+    document.getElementById('formError').classList.add('d-none');
+    document.getElementById('residentModal').classList.add('show');
+    document.getElementById('residentModalBackdrop').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeResidentModal() {
+    document.getElementById('residentModal').classList.remove('show');
+    document.getElementById('residentModalBackdrop').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    clearErrors();
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    document.getElementById('formError').classList.add('d-none');
+    document.getElementById('residentForm').classList.remove('was-validated');
+  }
+
+  function submitResidentForm() {
+    const form = document.getElementById('residentForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitSpinner = document.getElementById('submitSpinner');
+
+    // Validate required fields
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    submitBtn.style.display = 'none';
+    submitSpinner.classList.remove('d-none');
+
+    const formData = new FormData(form);
+
+    fetch('{% url "create_resident" %}', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Add new row to table
+        addResidentToTable(data.resident);
+        closeResidentModal();
+        
+        // Show success message
+        showSuccessMessage('Resident created successfully');
+      } else {
+        showFormErrors(data.errors || {'error': data.error});
+        document.getElementById('formError').textContent = data.error || 'An error occurred';
+        document.getElementById('formError').classList.remove('d-none');
+      }
+    })
+    .catch(error => {
+      document.getElementById('formError').textContent = 'An error occurred: ' + error;
+      document.getElementById('formError').classList.remove('d-none');
+    })
+    .finally(() => {
+      submitBtn.style.display = 'inline-block';
+      submitSpinner.classList.add('d-none');
+    });
+  }
+
+  function showFormErrors(errors) {
+    clearErrors();
+    for (const [field, messages] of Object.entries(errors)) {
+      const errorElement = document.getElementById(field + '-error');
+      if (errorElement && messages.length > 0) {
+        errorElement.textContent = messages[0];
+      }
+    }
+  }
+
+  function addResidentToTable(resident) {
+    const tbody = document.getElementById('residents-table-body');
+    
+    // Clear empty state if exists
+    const emptyRow = tbody.querySelector('tr td[colspan="5"]');
+    if (emptyRow) {
+      emptyRow.parentElement.remove();
+    }
+
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+      <td>${resident.user.first_name} ${resident.user.last_name}</td>
+      <td>${resident.building}</td>
+      <td>${resident.floor}</td>
+      <td>${resident.room_number}</td>
+      <td>${resident.user.email}</td>
+    `;
+    tbody.appendChild(newRow);
+  }
+
+  function showSuccessMessage(message) {
+    // Create a temporary alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('h2').parentElement;
+    container.insertAdjacentElement('afterend', alertDiv);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('residentModalBackdrop').addEventListener('click', closeResidentModal);
+</script>
 {% endblock %}

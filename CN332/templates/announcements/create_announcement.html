@@ -2,6 +2,71 @@
 
 {% block page_title %}Create Announcement{% endblock %}
 
+{% block extra_css %}
+<style>
+  .file-upload-area {
+    border: 2px dashed #e5e7eb;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f9fafb;
+  }
+
+  .file-upload-area:hover {
+    border-color: #5b5bff;
+    background: #f3f4ff;
+  }
+
+  .file-upload-area.dragover {
+    border-color: #5b5bff;
+    background: #ede9fe;
+  }
+
+  .file-input-hidden {
+    display: none;
+  }
+
+  .uploaded-files {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f3f4f6;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .file-item-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .file-remove-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .file-remove-btn:hover {
+    color: #991b1b;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -10,7 +75,7 @@
                 <i class="bi bi-megaphone me-2"></i>Post New Announcement
             </div>
             <div class="card-body p-4">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
 
                     <div class="mb-4">
@@ -19,8 +84,26 @@
                     </div>
 
                     <div class="mb-4">
+                        <label class="form-label fw-semibold">Category</label>
+                        {{ form.category }}
+                    </div>
+
+                    <div class="mb-4">
                         <label class="form-label fw-semibold">Content</label>
                         {{ form.content }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Attachments <span style="color: #9ca3af;">(Optional)</span></label>
+                        <div class="file-upload-area" id="fileUploadArea">
+                            <div style="margin-bottom: 8px;">
+                                <i class="bi bi-cloud-arrow-up" style="font-size: 2rem; color: #9ca3af;"></i>
+                            </div>
+                            <p style="margin-bottom: 8px; color: #6b7280;">Click to upload or drag and drop</p>
+                            <p style="font-size: 0.85rem; color: #9ca3af;">PNG, JPG, PDF, DOC up to 10MB</p>
+                        </div>
+                        <input type="file" id="fileInput" name="attachments" multiple class="file-input-hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                        <div class="uploaded-files" id="uploadedFiles"></div>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -34,4 +117,108 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileUploadArea = document.getElementById('fileUploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const uploadedFiles = document.getElementById('uploadedFiles');
+
+  // Click to upload
+  fileUploadArea.addEventListener('click', () => fileInput.click());
+
+  // Drag and drop
+  fileUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.add('dragover');
+  });
+
+  fileUploadArea.addEventListener('dragleave', () => {
+    fileUploadArea.classList.remove('dragover');
+  });
+
+  fileUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUploadArea.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // Handle file input change
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
+
+  function handleFiles(files) {
+    const dataTransfer = new DataTransfer();
+    
+    // Add existing files
+    for (let file of fileInput.files) {
+      dataTransfer.items.add(file);
+    }
+    
+    // Add new files
+    for (let file of files) {
+      dataTransfer.items.add(file);
+    }
+    
+    fileInput.files = dataTransfer.files;
+    displayFiles();
+  }
+
+  function displayFiles() {
+    uploadedFiles.innerHTML = '';
+    
+    if (fileInput.files.length === 0) {
+      return;
+    }
+
+    for (let file of fileInput.files) {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      
+      const icon = getFileIcon(file.name);
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      
+      fileItem.innerHTML = `
+        <div class="file-item-name">
+          <i class="bi ${icon}" style="font-size: 1.2rem;"></i>
+          <span>${file.name} (${sizeMB}MB)</span>
+        </div>
+        <button type="button" class="file-remove-btn" onclick="removeFile('${file.name}')">Remove</button>
+      `;
+      
+      uploadedFiles.appendChild(fileItem);
+    }
+  }
+
+  function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    switch(ext) {
+      case 'pdf': return 'bi-file-pdf';
+      case 'doc':
+      case 'docx': return 'bi-file-word';
+      case 'xls':
+      case 'xlsx': return 'bi-file-earmark-spreadsheet';
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+      case 'gif': return 'bi-image';
+      default: return 'bi-file';
+    }
+  }
+
+  window.removeFile = function(filename) {
+    const dataTransfer = new DataTransfer();
+    
+    for (let file of fileInput.files) {
+      if (file.name !== filename) {
+        dataTransfer.items.add(file);
+      }
+    }
+    
+    fileInput.files = dataTransfer.files;
+    displayFiles();
+  };
+});
+</script>
 {% endblock %}
