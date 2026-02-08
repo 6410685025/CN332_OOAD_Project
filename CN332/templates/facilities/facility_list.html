@@ -410,16 +410,12 @@
   {% if user.is_staff_member %}
   <div class="facility-header">
     <div>
-      <div class="facility-title"><i class="bi bi-building"></i>Facility Management</div>
       <div class="facility-subtitle">Manage facilities and bookings</div>
     </div>
     <button class="btn btn-add-facility" data-bs-toggle="modal" data-bs-target="#addFacilityModal">
       <i class="bi bi-plus-lg me-2"></i>Add New Facility
     </button>
   </div>
-  {% else %}
-  <div class="facility-title"><i class="bi bi-building"></i>Facility Booking</div>
-  <div class="facility-subtitle">Browse available facilities</div>
   {% endif %}
 
   <div class="row g-4">

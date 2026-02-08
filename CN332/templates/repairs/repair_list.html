@@ -168,29 +168,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-  <div>
-    <h2 class="mb-0" style="font-size: 1.75rem; font-weight: 600; color: #1e293b;">
-      <i class="bi bi-wrench me-2"></i>Repair / Requests
-    </h2>
-  </div>
-  {% if user.is_resident %}
-  <a href="{% url 'create_repair' %}" class="btn btn-new-request">
-    <i class="bi bi-plus-lg me-2"></i>New Request
-  </a>
-  {% endif %}
-</div>
-
-<div class="d-flex gap-2 mb-3">
+<div class="d-flex gap-2 mb-3 align-items-center">
   <form method="get" class="d-flex flex-grow-1 gap-2" role="search">
     <div class="input-group search-input-group flex-grow-1" style="max-width: 400px;">
       <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
       <input type="search" name="q" class="form-control" placeholder="Search by ID, location, or type..." value="{{ request.GET.q }}">
     </div>
-    <button type="button" class="btn btn-outline-secondary">
-      <i class="bi bi-funnel me-1"></i>Filter
-    </button>
   </form>
+  {% if user.is_resident or user.is_staff_member %}
+  <a href="{% url 'create_repair' %}" class="btn btn-new-request">
+    <i class="bi bi-plus-lg me-2"></i>New Request
+  </a>
+  {% endif %}
 </div>
 
 <div class="card repair-table-card">
@@ -257,3 +246,4 @@
   </div>
 </div>
 {% endblock %}
+

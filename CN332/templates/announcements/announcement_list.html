@@ -9,7 +9,7 @@
   }
 
   .announcements-header {
-    margin-bottom: 24px;
+    margin-bottom: 1px;
   }
 
   .announcements-title {
@@ -305,20 +305,6 @@
 
 {% block content %}
 <div class="announcements-page">
-  <div class="announcements-header">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <h2 class="announcements-title">Community Announcements</h2>
-        <p class="announcements-subtitle">Stay updated with the latest news and important information from your community</p>
-      </div>
-      {% if user.is_staff_member %}
-      <a href="{% url 'create_announcement' %}" class="btn btn-primary" style="margin-top: 4px;">
-        <i class="bi bi-plus-circle"></i> Create Announcement
-      </a>
-      {% endif %}
-    </div>
-  </div>
-
   <div class="announcements-controls">
     <div class="search-bar">
       <i class="bi bi-search" style="color: #9ca3af;"></i>
@@ -332,22 +318,19 @@
       <option value="EVENTS">Events</option>
       <option value="POLICIES">Policies</option>
     </select>
+    {% if user.is_staff_member %}
+    <a href="{% url 'create_announcement' %}" class="btn btn-primary">
+      <i class="bi bi-plus-circle"></i> Create Announcement
+    </a>
+    {% endif %}
   </div>
 
   <div class="announcements-list">
     {% for a in announcements %}
-    <div class="announcement-card" data-category="{{ a.category }}">
+    <div class="announcement-card" data-category="{{ a.category }}" data-full-content="{{ a.content|escape }}" data-full-title="{{ a.title|escape }}" data-publish-date="{{ a.publish_date|date:'M d, Y H:i' }}" data-announcement-id="{{ a.id }}">
       <div class="announcement-header">
         <div class="announcement-tags">
-          {% if a.category == 'EMERGENCY' %}
-          <span class="badge-tag badge-new"><i class="bi bi-exclamation-circle"></i>NEW</span>
           <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
-          {% elif a.category == 'GENERAL' %}
-          <span class="badge-tag badge-new"><i class="bi bi-exclamation-circle"></i>NEW</span>
-          <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
-          {% else %}
-          <span class="badge-tag badge-{{ a.category|lower }}">{{ a.get_category_display }}</span>
-          {% endif %}
         </div>
         <div class="announcement-date">{{ a.publish_date|date:"M d, Y" }}</div>
       </div>
@@ -359,17 +342,23 @@
       <div class="announcement-footer">
         <div class="attachment-info">
           <i class="bi bi-paperclip"></i>
-          <span>2 attachments</span>
+          <span>{{ a.attachments.count }} attachment{{ a.attachments.count|pluralize }}</span>
         </div>
-        <a href="#" class="read-more-link" data-announcement-id="{{ a.id }}" onclick="openAnnouncementModal({{ a.id }}, event)">Read more <i class="bi bi-arrow-right"></i></a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          {% if user.is_staff_member %}
+          <a href="#" class="edit-link" onclick="openEditModal({{ a.id }}, event)" style="color: #f59e0b; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+            <i class="bi bi-pencil-square"></i>Edit
+          </a>
+          {% endif %}
+          <a href="#" class="read-more-link" onclick="openAnnouncementModal({{ a.id }}, event)">Read more <i class="bi bi-arrow-right"></i></a>
+        </div>
       </div>
       
-      <!-- Hidden data for modal -->
-      <div class="announcement-full-content" id="content-{{ a.id }}" style="display: none;">
-        <div class="modal-title-text">{{ a.title }}</div>
-        <div class="modal-category">{{ a.get_category_display }}</div>
-        <div class="modal-date">{{ a.publish_date|date:"M d, Y H:i" }}</div>
-        <div class="modal-content">{{ a.content }}</div>
+      <!-- Hidden attachments data -->
+      <div class="announcement-attachments-data" style="display: none;">
+        {% for att in a.attachments.all %}
+        <div class="attachment-item" data-id="{{ att.id }}" data-url="{{ att.file.url }}" data-name="{{ att.file.name }}"></div>
+        {% endfor %}
       </div>
     </div>
     {% empty %}
@@ -393,36 +382,141 @@
     <div id="modalTitle" class="modal-title-text"></div>
     <div id="modalDate" class="modal-date"></div>
     <div id="modalContent" class="modal-content"></div>
+    
+    <!-- Attachments section -->
+    <div id="modalAttachments" style="display: none; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+      <h4 style="margin-bottom: 16px; font-weight: 600; color: #374151;">Attachments</h4>
+      <div id="attachmentsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Announcement Modal (Staff only) -->
+<div class="announcement-modal-overlay" id="editAnnouncementModal">
+  <div class="announcement-modal" style="max-height: 90vh; overflow-y: auto;">
+    <button class="announcement-modal-close" onclick="closeEditModal()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <h2 style="margin-bottom: 20px; font-size: 1.5rem; font-weight: 700; color: #111827;">Edit Announcement</h2>
+    
+    <form id="editAnnouncementForm">
+      {% csrf_token %}
+      <div style="margin-bottom: 16px;">
+        <label for="editTitle" style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Title</label>
+        <input type="text" id="editTitle" name="title" required style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem;" placeholder="Announcement title">
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label for="editCategory" style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Category</label>
+        <select id="editCategory" name="category" required style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem;">
+          <option value="">-- Select Category --</option>
+          <option value="emergency">Emergency</option>
+          <option value="general">General</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="events">Events</option>
+          <option value="policies">Policies</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label for="editContent" style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Content</label>
+        <textarea id="editContent" name="content" required style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem; min-height: 150px; font-family: inherit;" placeholder="Announcement content"></textarea>
+      </div>
+
+      <!-- Existing Attachments -->
+      <div style="margin-bottom: 20px;">
+        <h4 style="margin-bottom: 12px; font-weight: 600; color: #374151;">Current Attachments</h4>
+        <div id="existingAttachments" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <p id="noAttachmentsMsg" style="color: #9ca3af; font-size: 0.9rem;">No attachments yet</p>
+      </div>
+
+      <!-- New Attachments Upload -->
+      <div style="margin-bottom: 20px;">
+        <label for="editAttachments" style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Add New Attachments</label>
+        <input type="file" id="editAttachments" name="attachments" multiple style="display: block; margin-bottom: 8px; width: 100%; padding: 8px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem;">
+        <small style="color: #6b7280;">Supported: Images, PDF, DOC, DOCX, XLS, XLSX (Max 10MB each)</small>
+        <div id="newAttachmentsList" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <button type="button" onclick="closeEditModal()" style="padding: 10px 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #374151; font-weight: 500; cursor: pointer;">Cancel</button>
+        <button type="submit" style="padding: 10px 20px; border: none; border-radius: 8px; background: #5b5bff; color: #fff; font-weight: 500; cursor: pointer;">Save Changes</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
+let currentEditAnnouncementId = null;
+
 function openAnnouncementModal(announcementId, event) {
   event.preventDefault();
   
   const card = document.querySelector(`[data-announcement-id="${announcementId}"]`)?.closest('.announcement-card');
   if (!card) return;
 
-  const titleElement = card.querySelector('.announcement-title');
-  const contentElement = card.querySelector('.announcement-content');
+  // Get full content from data attributes
+  const fullTitle = card.getAttribute('data-full-title') || '';
+  const fullContent = card.getAttribute('data-full-content') || '';
+  const publishDate = card.getAttribute('data-publish-date') || '';
+  
   const categoryElement = card.querySelector('.badge-tag:not(.badge-new)');
-  const dateElement = card.querySelector('.announcement-date');
-
-  const title = titleElement?.textContent || '';
-  const content = contentElement?.textContent || '';
   const category = categoryElement?.textContent.trim() || '';
-  const date = dateElement?.textContent || '';
 
-  // Set modal content
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalContent').textContent = card.querySelector('.announcement-card')?.getAttribute('data-full-content') || content;
-  document.getElementById('modalDate').textContent = date;
+  // Set modal content - display full content with line breaks
+  document.getElementById('modalTitle').textContent = fullTitle;
+  document.getElementById('modalContent').innerHTML = fullContent.replace(/\n/g, '<br>');
+  document.getElementById('modalDate').textContent = publishDate;
   
   // Set category badge
   const categoryBadge = document.getElementById('modalCategoryBadge');
   const categoryClass = card.getAttribute('data-category').toLowerCase();
   categoryBadge.textContent = category;
   categoryBadge.className = `modal-category-badge badge-${categoryClass}`;
+
+  // Load and display attachments
+  const attachmentsData = card.querySelector('.announcement-attachments-data');
+  const attachmentsList = document.getElementById('attachmentsList');
+  const modalAttachments = document.getElementById('modalAttachments');
+  
+  if (attachmentsData) {
+    const attachments = attachmentsData.querySelectorAll('.attachment-item');
+    if (attachments.length > 0) {
+      attachmentsList.innerHTML = '';
+      attachments.forEach(att => {
+        const id = att.dataset.id;
+        const url = att.dataset.url;
+        const name = att.dataset.name;
+        const ext = name.split('.').pop().toLowerCase();
+        
+        // Determine file icon
+        let iconClass = 'bi-file';
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+          iconClass = 'bi-image';
+        } else if (ext === 'pdf') {
+          iconClass = 'bi-file-pdf';
+        } else if (['doc', 'docx'].includes(ext)) {
+          iconClass = 'bi-file-word';
+        } else if (['xls', 'xlsx'].includes(ext)) {
+          iconClass = 'bi-file-earmark-spreadsheet';
+        }
+        
+        const attachmentItem = document.createElement('div');
+        attachmentItem.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 10px; background: #f9fafb; border-radius: 8px;';
+        attachmentItem.innerHTML = `
+          <i class="bi ${iconClass}" style="font-size: 1.25rem; color: #6b7280;"></i>
+          <a href="${url}" target="_blank" style="flex: 1; color: #5b5bff; text-decoration: none; word-break: break-word;">${name}</a>
+          <a href="${url}" download style="color: #6b7280; text-decoration: none; padding: 4px 8px;">
+            <i class="bi bi-download" style="font-size: 1rem;"></i>
+          </a>
+        `;
+        attachmentsList.appendChild(attachmentItem);
+      });
+      modalAttachments.style.display = 'block';
+    } else {
+      modalAttachments.style.display = 'none';
+    }
+  }
 
   // Show modal
   const modal = document.getElementById('announcementModal');
@@ -441,10 +535,191 @@ function closeAnnouncementModal() {
   modal.classList.remove('active');
 }
 
+function openEditModal(announcementId, event) {
+  event.preventDefault();
+  
+  if (!confirm('Are you sure you want to edit this announcement?')) {
+    return;
+  }
+
+  currentEditAnnouncementId = announcementId;
+
+  // Fetch announcement data
+  fetch(`/announcements/edit/${announcementId}/`, {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Populate form fields
+      document.getElementById('editTitle').value = data.announcement.title;
+      document.getElementById('editCategory').value = data.announcement.category;
+      document.getElementById('editContent').value = data.announcement.content;
+
+      // Display existing attachments
+      const existingAttachments = document.getElementById('existingAttachments');
+      const noAttachmentsMsg = document.getElementById('noAttachmentsMsg');
+      
+      existingAttachments.innerHTML = '';
+      if (data.attachments && data.attachments.length > 0) {
+        noAttachmentsMsg.style.display = 'none';
+        data.attachments.forEach(att => {
+          const attachmentItem = document.createElement('div');
+          attachmentItem.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 10px; background: #f9fafb; border-radius: 8px;';
+          attachmentItem.innerHTML = `
+            <span style="flex: 1; color: #374151; font-size: 0.9rem;">${att.name}</span>
+            <button type="button" onclick="deleteAttachment(${att.id}, event)" style="padding: 4px 8px; background: #fee2e2; color: #991b1b; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          `;
+          existingAttachments.appendChild(attachmentItem);
+        });
+      } else {
+        noAttachmentsMsg.style.display = 'block';
+      }
+
+      // Show edit modal
+      const modal = document.getElementById('editAnnouncementModal');
+      modal.classList.add('active');
+
+      // Close modal on overlay click
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeEditModal();
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error fetching announcement:', error);
+    alert('Error loading announcement');
+  });
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editAnnouncementModal');
+  modal.classList.remove('active');
+  currentEditAnnouncementId = null;
+  document.getElementById('editAnnouncementForm').reset();
+  document.getElementById('newAttachmentsList').innerHTML = '';
+}
+
+function deleteAttachment(attachmentId, event) {
+  event.preventDefault();
+  
+  if (!confirm('Are you sure you want to delete this attachment?')) {
+    return;
+  }
+
+  fetch(`/announcements/attachment/delete/${attachmentId}/`, {
+    method: 'DELETE',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': getCookie('csrftoken')
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Remove attachment from UI
+      event.target.closest('div').remove();
+      
+      // Show "no attachments" message if none left
+      const existingAttachments = document.getElementById('existingAttachments');
+      if (existingAttachments.children.length === 0) {
+        document.getElementById('noAttachmentsMsg').style.display = 'block';
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error deleting attachment:', error);
+    alert('Error deleting attachment');
+  });
+}
+
+// Handle new attachments display
+document.getElementById('editAttachments')?.addEventListener('change', function(e) {
+  const newAttachmentsList = document.getElementById('newAttachmentsList');
+  newAttachmentsList.innerHTML = '';
+  
+  Array.from(e.target.files).forEach((file, index) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 8px; background: #f0f4ff; border-radius: 6px;';
+    item.innerHTML = `
+      <i class="bi bi-file" style="color: #5b5bff;"></i>
+      <span style="flex: 1; font-size: 0.9rem; color: #374151;">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+    `;
+    newAttachmentsList.appendChild(item);
+  });
+});
+
+// Handle form submission
+document.getElementById('editAnnouncementForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  if (!currentEditAnnouncementId) return;
+
+  const formData = new FormData();
+  formData.append('title', document.getElementById('editTitle').value);
+  formData.append('category', document.getElementById('editCategory').value);
+  formData.append('content', document.getElementById('editContent').value);
+  formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+  // Add new attachments
+  const fileInput = document.getElementById('editAttachments');
+  if (fileInput.files.length > 0) {
+    Array.from(fileInput.files).forEach(file => {
+      formData.append('attachments', file);
+    });
+  }
+
+  fetch(`/announcements/edit/${currentEditAnnouncementId}/`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Announcement updated successfully');
+      closeEditModal();
+      // Reload page to show updated announcement
+      location.reload();
+    } else {
+      alert('Error: ' + (data.message || 'Failed to update announcement'));
+    }
+  })
+  .catch(error => {
+    console.error('Error updating announcement:', error);
+    alert('Error updating announcement');
+  });
+});
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
 // Close modal with Escape key
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeAnnouncementModal();
+    closeEditModal();
   }
 });
 

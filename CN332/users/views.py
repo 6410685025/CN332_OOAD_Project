@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from datetime import timedelta
 from django.db import transaction
+import json
 
 from users.models import Resident, User
 from users.forms import ResidentCreationForm, ResidentProfileForm, ResidentPasswordChangeForm
@@ -57,6 +58,7 @@ def resident_dashboard(request):
             '-arrived_at'
         )[:5],
         'upcoming_bookings': Booking.objects.filter(resident=resident, booking_date__gte=today, status__in=['PENDING', 'CONFIRMED']).select_related('facility').order_by('booking_date')[:5],
+        'recent_lost_found': LostFound.objects.filter(reporter=resident).order_by('-reported_at')[:5],
     }
     return render(request, 'resident/dashboard.html', context)
 
@@ -112,18 +114,17 @@ def create_resident_view(request):
     if form.is_valid():
         try:
             with transaction.atomic():
-                # Create user
+                # Create user (don't set is_resident since it's a property)
                 user = User.objects.create_user(
                     username=form.cleaned_data['username'],
                     email=form.cleaned_data['email'],
                     password=form.cleaned_data['password'],
                     first_name=form.cleaned_data['first_name'],
                     last_name=form.cleaned_data['last_name'],
-                    contact_number=form.cleaned_data.get('contact_number', ''),
-                    is_resident=True
+                    contact_number=form.cleaned_data.get('contact_number', '')
                 )
                 
-                # Create resident
+                # Create resident (this makes the user a resident via the relationship)
                 resident = Resident.objects.create(
                     user=user,
                     building=form.cleaned_data['building'],
@@ -156,6 +157,101 @@ def create_resident_view(request):
 
 
 @login_required
+@require_http_methods(["GET"])
+def get_resident_view(request, resident_id):
+    if not request.user.is_staff_member:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        resident = Resident.objects.select_related('user').get(id=resident_id)
+        return JsonResponse({
+            'id': resident.id,
+            'user': {
+                'first_name': resident.user.first_name,
+                'last_name': resident.user.last_name,
+                'username': resident.user.username,
+                'email': resident.user.email,
+            },
+            'contact_number': resident.user.contact_number,
+            'building': resident.building,
+            'floor': resident.floor,
+            'room_number': resident.room_number
+        })
+    except Resident.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Resident not found'}, status=404)
+
+
+@login_required
+@require_http_methods(["PUT"])
+def update_resident_view(request, resident_id):
+    if not request.user.is_staff_member:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        resident = Resident.objects.select_related('user').get(id=resident_id)
+        data = json.loads(request.body)
+        
+        # Update user fields
+        resident.user.first_name = data.get('first_name', resident.user.first_name)
+        resident.user.last_name = data.get('last_name', resident.user.last_name)
+        resident.user.email = data.get('email', resident.user.email)
+        resident.user.contact_number = data.get('contact_number', resident.user.contact_number)
+        resident.user.save()
+        
+        # Update resident fields
+        resident.building = data.get('building', resident.building)
+        resident.floor = data.get('floor', resident.floor)
+        resident.room_number = data.get('room_number', resident.room_number)
+        resident.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Resident updated successfully',
+            'resident': {
+                'id': resident.id,
+                'user': {
+                    'first_name': resident.user.first_name,
+                    'last_name': resident.user.last_name,
+                    'username': resident.user.username,
+                    'email': resident.user.email,
+                    'contact_number': resident.user.contact_number
+                },
+                'building': resident.building,
+                'floor': resident.floor,
+                'room_number': resident.room_number
+            }
+        })
+    except Resident.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Resident not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_resident_view(request, resident_id):
+    if not request.user.is_staff_member:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        resident = Resident.objects.select_related('user').get(id=resident_id)
+        resident_name = f"{resident.user.first_name} {resident.user.last_name}"
+        user = resident.user
+        resident.delete()
+        user.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Resident deleted successfully',
+            'resident_name': resident_name
+        })
+    except Resident.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Resident not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+
+@login_required
 def settings_view(request):
     return render(request, 'users/settings.html')
 
@@ -163,7 +259,7 @@ def settings_view(request):
 @login_required
 @require_http_methods(["POST"])
 def update_profile_view(request):
-    if not request.user.is_resident:
+    if not (request.user.is_resident or request.user.is_staff_member):
         return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
     
     form = ResidentProfileForm(request.POST, request.FILES, instance=request.user)
@@ -198,7 +294,7 @@ def update_profile_view(request):
 @login_required
 @require_http_methods(["POST"])
 def change_password_view(request):
-    if not request.user.is_resident:
+    if not (request.user.is_resident or request.user.is_staff_member):
         return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
     
     form = ResidentPasswordChangeForm(request.user, request.POST)

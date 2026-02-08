@@ -7,14 +7,22 @@ from .forms import RepairRequestForm, AssignTechnicianForm, AssignStaffForm, Upd
 
 @login_required
 def create_repair_view(request):
-    if not request.user.is_resident:
+    if not (request.user.is_resident or request.user.is_staff_member):
         return redirect('dashboard')
         
     if request.method == 'POST':
         form = RepairRequestForm(request.POST)
         if form.is_valid():
             repair = form.save(commit=False)
-            repair.resident = request.user.resident
+            
+            # Assign resident based on role
+            if request.user.is_resident:
+                repair.resident = request.user.resident
+            elif request.user.is_staff_member:
+                # Staff can create repair for themselves if they're also a resident,
+                # otherwise assign to a specific resident (handled by form)
+                pass
+            
             repair.save()
             
             # Handle image uploads
