@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Announcement
-from .forms import AnnouncementForm
+from .models import Announcement, AnnouncementAttachment
+from .forms import AnnouncementForm, AnnouncementAttachmentForm
 
 @login_required
 def announcement_list_view(request):
@@ -19,6 +19,16 @@ def create_announcement_view(request):
             announcement = form.save(commit=False)
             announcement.author = request.user.staff
             announcement.save()
+            
+            # Handle file attachments
+            files = request.FILES.getlist('attachments')
+            for file in files:
+                if file:
+                    AnnouncementAttachment.objects.create(
+                        announcement=announcement,
+                        file=file
+                    )
+            
             return redirect('announcement_list')
     else:
         form = AnnouncementForm()

@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import RepairRequest, WorkLog
-from .forms import RepairRequestForm, AssignTechnicianForm, UpdateRepairStatusForm, RatingForm
+import json
+from .models import RepairRequest, WorkLog, RepairImage
+from .forms import RepairRequestForm, AssignTechnicianForm, AssignStaffForm, UpdateRepairStatusForm, UpdateComplaintStatusForm, RatingForm, RepairImageForm
 
 @login_required
 def create_repair_view(request):
@@ -15,6 +16,31 @@ def create_repair_view(request):
             repair = form.save(commit=False)
             repair.resident = request.user.resident
             repair.save()
+            
+            # Handle image uploads
+            images_data_str = request.POST.get('images_data', '[]')
+            try:
+                images_data = json.loads(images_data_str)
+            except json.JSONDecodeError:
+                images_data = []
+            
+            # Process uploaded images
+            if images_data:
+                for img_data in images_data:
+                    img_id = img_data.get('id')
+                    img_type = img_data.get('type', 'BEFORE')
+                    
+                    # Get the file from POST
+                    file_key = f'image_{img_id}'
+                    if file_key in request.FILES:
+                        image_file = request.FILES[file_key]
+                        RepairImage.objects.create(
+                            repair_request=repair,
+                            image=image_file,
+                            image_type=img_type,
+                            uploaded_by=request.user
+                        )
+            
             return redirect('repair_list')
     else:
         form = RepairRequestForm()
@@ -47,9 +73,40 @@ def repair_list_view(request):
 def repair_detail_view(request, pk):
     repair = get_object_or_404(RepairRequest, pk=pk)
     logs = repair.logs.all().order_by('-timestamp')
-    return render(request, 'repairs/repair_detail.html', {'repair': repair, 'logs': logs})
+    
+    # Handle complaint status update by staff
+    complaint_form = None
+    if (request.user.is_staff_member and 
+        repair.request_type == 'COMPLAINT' and 
+        repair.assigned_staff and 
+        repair.assigned_staff.user == request.user and 
+        repair.status != 'COMPLETED'):
+        
+        if request.method == 'POST':
+            complaint_form = UpdateComplaintStatusForm(request.POST, instance=repair)
+            if complaint_form.is_valid():
+                complaint_form.save()
+                work_note = complaint_form.cleaned_data.get('work_note')
+                if work_note:
+                    WorkLog.objects.create(
+                        repair_request=repair,
+                        description=work_note
+                    )
+                WorkLog.objects.create(
+                    repair_request=repair,
+                    description=f"Status updated to: {repair.get_status_display()}"
+                )
+                return redirect('repair_detail', pk=pk)
+        else:
+            complaint_form = UpdateComplaintStatusForm(instance=repair)
+    
+    return render(request, 'repairs/repair_detail.html', {
+        'repair': repair, 
+        'logs': logs,
+        'complaint_form': complaint_form
+    })
 
-# Staff assigns technician to repair
+# Staff assigns technician or staff to repair
 @login_required
 def assign_technician_view(request, pk):
     if not request.user.is_staff_member:
@@ -57,19 +114,37 @@ def assign_technician_view(request, pk):
     
     repair = get_object_or_404(RepairRequest, pk=pk)
     
+    # Use different form based on request type
+    if repair.request_type == 'MAINTENANCE':
+        FormClass = AssignTechnicianForm
+        field_name = 'technician'
+    else:  # COMPLAINT
+        FormClass = AssignStaffForm
+        field_name = 'assigned_staff'
+    
     if request.method == 'POST':
-        form = AssignTechnicianForm(request.POST, instance=repair)
+        form = FormClass(request.POST, instance=repair)
         if form.is_valid():
             form.save()
-            WorkLog.objects.create(
-                repair_request=repair,
-                description=f"Assigned to technician: {repair.technician.user.username}"
-            )
+            if repair.request_type == 'MAINTENANCE':
+                WorkLog.objects.create(
+                    repair_request=repair,
+                    description=f"Assigned to technician: {repair.technician.user.username}"
+                )
+            else:
+                WorkLog.objects.create(
+                    repair_request=repair,
+                    description=f"Assigned to staff: {repair.assigned_staff.user.username}"
+                )
             return redirect('repair_list')
     else:
-        form = AssignTechnicianForm(instance=repair)
+        form = FormClass(instance=repair)
     
-    return render(request, 'repairs/assign_technician.html', {'form': form, 'repair': repair})
+    return render(request, 'repairs/assign_technician.html', {
+        'form': form, 
+        'repair': repair,
+        'is_complaint': repair.request_type == 'COMPLAINT'
+    })
 
 # Technician updates repair status
 @login_required

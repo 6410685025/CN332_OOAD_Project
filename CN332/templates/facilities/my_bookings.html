@@ -2,58 +2,172 @@
 
 {% block page_title %}My Bookings{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <p class="text-muted mb-0">View and manage your facility reservations</p>
-  <a href="{% url 'create_booking' %}" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>New Booking</a>
-</div>
+{% block extra_css %}
+<style>
+  .bookings-page {
+    padding: 8px 4px 24px;
+  }
 
-<div class="card">
-  <div class="card-body p-0">
-    <table class="table mb-0">
-      <thead>
-        <tr>
-          <th>Facility</th>
-          <th>Date</th>
-          <th>Time Slot</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for b in bookings %}
-        <tr>
-          <td>
-            <div class="d-flex align-items-center gap-2">
-              <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} text-primary"></i>
-              <span class="fw-semibold">{{ b.facility.name }}</span>
-            </div>
-          </td>
-          <td>{{ b.booking_date|date:"M d, Y" }}</td>
-          <td>{{ b.time_slot }}</td>
-          <td>
-            <span class="badge-pill {% if b.status == 'CONFIRMED' %}bg-success{% elif b.status == 'PENDING' %}bg-warning{% elif b.status == 'CANCELLED' %}bg-danger{% else %}bg-secondary{% endif %}">
-              {{ b.get_status_display }}
-            </span>
-          </td>
-          <td>
-            {% if b.status == 'PENDING' %}
-            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-outline-danger">Cancel</a>
-            {% elif b.status == 'CANCELLED' %}
-            <a href="#" class="btn btn-sm btn-link text-primary p-0">View Details</a>
-            {% else %}
-            <a href="{% url 'facility_list' %}" class="btn btn-sm btn-outline-secondary">View</a>
-            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-link text-danger p-0">Cancel</a>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="5" class="text-center py-5 text-muted">No bookings yet</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    color: #6b7280;
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+  }
+
+  .new-booking-btn {
+    background: #2563eb;
+    border-color: #2563eb;
+    font-weight: 600;
+  }
+
+  .new-booking-btn:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+
+  .bookings-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .bookings-table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    background: #f8fafc;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 14px 16px;
+  }
+
+  .bookings-table td {
+    padding: 14px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .bookings-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .facility-name {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .facility-icon {
+    color: #2563eb;
+  }
+
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .status-pill.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-pill.confirmed {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .status-pill.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .action-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bookings-page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title"><i class="bi bi-journal-bookmark"></i>My Bookings</h2>
+      <p class="page-subtitle">View and manage your facility reservations</p>
+    </div>
+    <a href="{% url 'create_booking' %}" class="btn btn-primary new-booking-btn">
+      <i class="bi bi-plus-circle me-2"></i>New Booking
+    </a>
+  </div>
+
+  <div class="bookings-card">
+    <div class="table-responsive">
+      <table class="table mb-0 bookings-table">
+        <thead>
+          <tr>
+            <th>Facility</th>
+            <th>Date</th>
+            <th>Time Slot</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} facility-icon"></i>
+                <span class="facility-name">{{ b.facility.name }}</span>
+              </div>
+            </td>
+            <td>{{ b.booking_date|date:"M d, Y" }}</td>
+            <td>{{ b.time_slot }}</td>
+            <td>
+              <span class="status-pill {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% elif b.status == 'CANCELLED' %}cancelled{% else %}pending{% endif %}">
+                {{ b.get_status_display }}
+              </span>
+            </td>
+            <td>
+              {% if b.status == 'PENDING' %}
+              <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-outline-danger">Cancel</a>
+              {% elif b.status == 'CANCELLED' %}
+              <a href="#" class="action-link text-primary">View Details</a>
+              {% else %}
+              <a href="{% url 'facility_list' %}" class="btn btn-sm btn-outline-secondary">View</a>
+              <a href="{% url 'cancel_booking' b.pk %}" class="action-link text-danger ms-2">Cancel</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">No bookings yet</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}

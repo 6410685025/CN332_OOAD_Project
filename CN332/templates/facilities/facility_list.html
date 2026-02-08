@@ -2,84 +2,591 @@
 
 {% block page_title %}Facility Booking{% endblock %}
 
+{% block extra_css %}
+<style>
+  .facility-page {
+    padding: 8px 4px 24px;
+  }
+
+  .facility-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .facility-subtitle {
+    color: #6b7280;
+    margin-bottom: 20px;
+  }
+
+  .facility-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .facility-image {
+    position: relative;
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .thumb-pool {
+    background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80');
+  }
+
+  .thumb-gym {
+    background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=800&q=80');
+  }
+
+  .thumb-meeting {
+    background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80');
+  }
+
+  .thumb-playground {
+    background-image: url('https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=800&q=80');
+  }
+
+  .availability-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .availability-badge.available {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .availability-badge.unavailable {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .facility-body {
+    padding: 12px 16px 16px;
+  }
+
+  .facility-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .facility-name {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .facility-icon {
+    font-size: 1.1rem;
+    color: #2563eb;
+  }
+
+  .facility-desc {
+    color: #6b7280;
+    font-size: 0.85rem;
+    min-height: 38px;
+  }
+
+  .facility-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: 8px 0 12px;
+  }
+
+  .facility-meta i {
+    color: #6366f1;
+  }
+
+  .facility-action {
+    background: #4f46e5;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+
+  .facility-action:hover {
+    background: #4338ca;
+    color: #fff;
+  }
+
+  .bookings-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .bookings-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  .bookings-header .active-pill {
+    background: #e0e7ff;
+    color: #4338ca;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .booking-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+  }
+
+  .booking-card + .booking-card {
+    margin-top: 10px;
+  }
+
+  .booking-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .booking-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .booking-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 0.8rem;
+  }
+
+  .booking-meta {
+    display: grid;
+    gap: 4px;
+    color: #6b7280;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+  }
+
+  .booking-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .booking-status {
+    font-size: 0.72rem;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .booking-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .booking-item:last-child {
+    border-bottom: none;
+  }
+
+  .booking-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .booking-time {
+    color: #6b7280;
+    font-size: 0.8rem;
+  }
+
+  .booking-status {
+    font-size: 0.72rem;
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-weight: 600;
+  }
+
+  .booking-status.confirmed {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .booking-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .booking-status.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .facility-status-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .facility-status-badge.open {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .facility-status-badge.closed {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .facility-controls {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .facility-controls .btn {
+    flex: 1;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .btn-toggle-closed {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+  }
+
+  .btn-toggle-closed:hover {
+    background: #fecaca;
+  }
+
+  .btn-toggle-open {
+    background: #dcfce7;
+    color: #15803d;
+    border: none;
+  }
+
+  .btn-toggle-open:hover {
+    background: #bbf7d0;
+  }
+
+  .booking-status.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .booking-actions .btn {
+    border-radius: 8px;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+
+  .booking-actions .btn-view {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    color: #475569;
+    font-weight: 600;
+  }
+
+  .booking-actions .btn-view:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .booking-actions .btn-cancel {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid transparent;
+    font-weight: 600;
+  }
+
+  .booking-actions .btn-cancel:hover {
+    background: #fecaca;
+    color: #991b1b;
+  }
+
+  .booking-actions .btn-details {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    color: #475569;
+    font-weight: 600;
+  }
+
+  .booking-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .bookings-footer {
+    padding: 12px 16px 16px;
+  }
+
+  .facility-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .btn-add-facility {
+    background: #4f46e5;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: none;
+  }
+
+  .btn-add-facility:hover {
+    background: #4338ca;
+    color: #fff;
+  }
+
+  .modal-content {
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 24px;
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 24px;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-  <div class="col-lg-8">
-    <h2 class="mb-1"><i class="bi bi-building me-2"></i>Facility Booking</h2>
-    <p class="text-secondary mb-4">Browse facilities and check availability</p>
-
-    <div class="row g-4">
-      {% for f in facilities %}
-      <div class="col-md-6">
-        <div class="card h-100 overflow-hidden">
-          <div class="position-relative" style="height: 140px; background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
-            <span class="position-absolute top-0 end-0 m-2 badge-pill {% if forloop.counter|divisibleby:3 %}bg-warning{% else %}bg-success{% endif %}">
-              Available
-            </span>
-            <div class="position-absolute bottom-0 start-0 end-0 p-3 text-white">
-              <h5 class="mb-0">{{ f.name }}</h5>
-            </div>
-          </div>
-          <div class="card-body">
-            <p class="text-muted small mb-2">{{ f.description|default:"Modern facility for residents."|truncatewords:15 }}</p>
-            <p class="small text-muted mb-1"><i class="bi bi-people me-1"></i>Capacity: {{ f.capacity }}</p>
-            <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i>8 AM - 10 PM</p>
-            <a href="{% url 'create_booking' %}?facility={{ f.id }}" class="btn btn-primary w-100 rounded-pill">
-              Check Availability
-            </a>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div class="col-12">
-        <div class="card">
-          <div class="card-body text-center py-5">
-            <i class="bi bi-building display-4 text-muted"></i>
-            <p class="text-muted mt-2">No facilities available</p>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
+<div class="facility-page">
+  {% if user.is_staff_member %}
+  <div class="facility-header">
+    <div>
+      <div class="facility-title"><i class="bi bi-building"></i>Facility Management</div>
+      <div class="facility-subtitle">Manage facilities and bookings</div>
     </div>
+    <button class="btn btn-add-facility" data-bs-toggle="modal" data-bs-target="#addFacilityModal">
+      <i class="bi bi-plus-lg me-2"></i>Add New Facility
+    </button>
   </div>
+  {% else %}
+  <div class="facility-title"><i class="bi bi-building"></i>Facility Booking</div>
+  <div class="facility-subtitle">Browse available facilities</div>
+  {% endif %}
 
-  {% if is_resident %}
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span>My Bookings</span>
-        {% if my_bookings %}<span class="badge bg-primary">{{ my_bookings|length }} Active</span>{% endif %}
-      </div>
-      <div class="card-body p-0">
-        {% for b in my_bookings %}
-        <div class="p-3 border-bottom">
-          <div class="d-flex align-items-start gap-2">
-            <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %} text-primary mt-1"></i>
-            <div class="flex-grow-1">
-              <strong class="d-block">{{ b.facility.name }}</strong>
-              <small class="text-muted">{{ b.booking_date|date:"M d, Y" }} · {{ b.time_slot }}</small>
-              <span class="badge-pill mt-1 {% if b.status == 'CONFIRMED' %}bg-success{% elif b.status == 'PENDING' %}bg-warning{% else %}bg-secondary{% endif %}">{{ b.status }}</span>
-            </div>
-          </div>
-          <div class="mt-2 d-flex gap-2">
-            <a href="{% url 'my_bookings' %}" class="btn btn-sm btn-outline-secondary">View</a>
-            {% if b.status != 'CANCELLED' %}
-            <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-link text-danger p-0">Cancel</a>
+  <div class="row g-4">
+    <div class="col-lg-8">
+
+      <div class="row g-4">
+        {% for f in facilities %}
+        <div class="col-md-6">
+          <div class="facility-card h-100">
+            {% if f.image %}
+            <div class="facility-image" style="background-image: url('{{ f.image.url }}');">
+            {% else %}
+            <div class="facility-image
+              {% if f.facility_type == 'SWIMMING_POOL' %}thumb-pool
+              {% elif f.facility_type == 'GYM' %}thumb-gym
+              {% elif f.facility_type == 'MEETING_ROOM' %}thumb-meeting
+              {% elif f.facility_type == 'PLAYGROUND' %}thumb-playground
+              {% else %}thumb-pool{% endif %}">
             {% endif %}
+              <span class="facility-status-badge {% if f.is_open %}open{% else %}closed{% endif %}">
+                {% if f.is_open %}OPEN{% else %}CLOSED{% endif %}
+              </span>
+              <span class="availability-badge {% if f.id in unavailable_facility_ids %}unavailable{% else %}available{% endif %}">
+                {% if f.id in unavailable_facility_ids %}Unavailable{% else %}Available{% endif %}
+              </span>
+            </div>
+            <div class="facility-body">
+              <div class="facility-name-row">
+                <div class="facility-name">{{ f.name }}</div>
+                <i class="bi bi-{% if f.facility_type == 'SWIMMING_POOL' %}droplet{% elif f.facility_type == 'MEETING_ROOM' %}building{% elif f.facility_type == 'GYM' %}activity{% elif f.facility_type == 'PLAYGROUND' %}stars{% else %}star{% endif %} facility-icon"></i>
+              </div>
+              <div class="facility-desc">{{ f.description|default:"Modern facility for residents."|truncatewords:16 }}</div>
+              <div class="facility-meta">
+                <span><i class="bi bi-people"></i>Capacity: {{ f.capacity }}</span>
+                <span><i class="bi bi-clock"></i>8 AM - 10 PM</span>
+              </div>
+              {% if user.is_staff_member %}
+                <div class="facility-controls">
+                  {% if f.is_open %}
+                  <a href="{% url 'toggle_facility' f.id %}" class="btn btn-toggle-closed">Close Facility</a>
+                  {% else %}
+                  <a href="{% url 'toggle_facility' f.id %}" class="btn btn-toggle-open">Open Facility</a>
+                  {% endif %}
+                </div>
+              {% else %}
+                {% if f.is_open %}
+                <a href="{% url 'create_booking' %}?facility={{ f.id }}" class="btn facility-action w-100">Check Availability</a>
+                {% else %}
+                <button class="btn facility-action w-100" disabled style="background: #d1d5db; cursor: not-allowed;">Facility Closed</button>
+                {% endif %}
+              {% endif %}
+            </div>
           </div>
         </div>
         {% empty %}
-        <div class="p-4 text-center text-muted">No active bookings</div>
+        <div class="col-12">
+          <div class="facility-card">
+            <div class="facility-body text-center py-5">
+              <i class="bi bi-building display-6 text-muted"></i>
+              <div class="text-muted mt-2">No facilities available</div>
+            </div>
+          </div>
+        </div>
         {% endfor %}
       </div>
-      <div class="card-footer bg-transparent">
-        <a href="{% url 'my_bookings' %}" class="btn btn-outline-primary w-100"><i class="bi bi-plus me-1"></i>View All Bookings</a>
-        {% if not my_bookings %}
-        <a href="{% url 'create_booking' %}" class="btn btn-primary w-100 mt-2">Book a facility</a>
-        {% endif %}
+    </div>
+
+    {% if is_resident %}
+    <div class="col-lg-4">
+      <div class="bookings-card">
+        <div class="bookings-header">
+          <span>My Bookings</span>
+          {% if my_bookings %}<span class="active-pill">{{ my_bookings|length }} Active</span>{% endif %}
+        </div>
+        <div class="p-3">
+          {% for b in my_bookings %}
+          <div class="booking-card">
+            <div class="booking-head">
+              <div class="booking-title">
+                <span class="booking-icon">
+                  <i class="bi bi-{% if b.facility.facility_type == 'SWIMMING_POOL' %}droplet{% elif b.facility.facility_type == 'MEETING_ROOM' %}building{% else %}activity{% endif %}"></i>
+                </span>
+                {{ b.facility.name }}
+              </div>
+              <span class="booking-status {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% else %}cancelled{% endif %}">
+                {{ b.get_status_display }}
+              </span>
+            </div>
+            <div class="booking-meta">
+              <span><i class="bi bi-calendar-event"></i>{{ b.booking_date|date:"M d, Y" }}</span>
+              <span><i class="bi bi-clock"></i>{{ b.time_slot }}</span>
+            </div>
+            <div class="booking-actions">
+              <a href="{% url 'my_bookings' %}" class="btn btn-view">View</a>
+              {% if b.status != 'CANCELLED' %}
+              <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-cancel">Cancel</a>
+              {% else %}
+              <a href="{% url 'my_bookings' %}" class="btn btn-details">View Details</a>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-4 text-center text-muted">No active bookings</div>
+          {% endfor %}
+        </div>
+        <div class="bookings-footer">
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline-primary w-100">View All Bookings</a>
+          {% if not my_bookings %}
+          <a href="{% url 'create_booking' %}" class="btn btn-primary w-100 mt-2">Book a facility</a>
+          {% endif %}
+        </div>
       </div>
     </div>
+    {% endif %}
   </div>
-  {% endif %}
 </div>
+
+<!-- Add Facility Modal -->
+{% if user.is_staff_member %}
+<div class="modal fade" id="addFacilityModal" tabindex="-1" aria-labelledby="addFacilityModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'create_facility' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="addFacilityModalLabel">
+            <i class="bi bi-plus-circle me-2"></i>Add New Facility
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="id_name" class="form-label">Facility Name</label>
+            <input type="text" class="form-control" id="id_name" name="name" required placeholder="e.g., Swimming Pool">
+          </div>
+          <div class="mb-3">
+            <label for="id_facility_type" class="form-label">Facility Type</label>
+            <select class="form-select" id="id_facility_type" name="facility_type" required>
+              <option value="">Select type...</option>
+              <option value="SWIMMING_POOL">Swimming Pool</option>
+              <option value="GYM">Gym</option>
+              <option value="MEETING_ROOM">Meeting Room</option>
+              <option value="PLAYGROUND">Playground</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="id_capacity" class="form-label">Capacity</label>
+            <input type="number" class="form-control" id="id_capacity" name="capacity" required placeholder="e.g., 20">
+          </div>
+          <div class="mb-3">
+            <label for="id_description" class="form-label">Description</label>
+            <textarea class="form-control" id="id_description" name="description" rows="3" placeholder="Enter facility description..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="id_image" class="form-label">Facility Image</label>
+            <input type="file" class="form-control" id="id_image" name="image" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-2"></i>Create Facility
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
