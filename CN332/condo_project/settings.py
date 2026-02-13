@@ -29,7 +29,11 @@ SECRET_KEY = 'django-insecure-x+oh!$j=%9(cd2$l(ms1&7sh#^xu4q=#x)$#gy=-@m)gx17m!s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "preadaptable-saintly-amanda.ngrok-free.dev",
+]
 
 
 # Application definition
@@ -46,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
     'users',
     'repairs',
     'facilities',
@@ -159,6 +164,15 @@ SOCIALACCOUNT_PROVIDERS = {
             'client_id':  os.getenv('GOOGLE_CLIENT_ID', ''),
             'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
         }
+    },
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email', 'public_profile'],
+        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name'],
+        'APP': {
+            'client_id': os.getenv('FACEBOOK_APP_ID', ''),
+            'secret': os.getenv('FACEBOOK_APP_SECRET', ''),
+        }
     }
 }
 
@@ -168,3 +182,9 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"] 
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
