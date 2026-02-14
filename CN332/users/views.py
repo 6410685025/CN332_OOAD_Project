@@ -5,9 +5,15 @@ from django.utils import timezone
 from django.db.models import Case, When, IntegerField
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.conf import settings
+from django.contrib import messages
+from django.urls import reverse
 from datetime import timedelta
 from django.db import transaction
 import json
+import secrets
+from urllib.parse import urlencode
+import requests
 
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.views import connections
@@ -281,6 +287,121 @@ def social_disconnect_view(request):
         return redirect('settings')
 
     SocialAccount.objects.filter(id=account_id, user=request.user).delete()
+    return redirect('settings')
+
+
+@login_required
+def line_connect_view(request):
+    if not settings.LINE_CHANNEL_ID or not settings.LINE_CHANNEL_SECRET:
+        messages.error(request, 'LINE login is not configured.')
+        return redirect('settings')
+
+    state = secrets.token_urlsafe(16)
+    nonce = secrets.token_urlsafe(16)
+    request.session['line_oauth_state'] = state
+    request.session['line_oauth_nonce'] = nonce
+
+    redirect_uri = request.build_absolute_uri(reverse('line_callback'))
+    params = {
+        'response_type': 'code',
+        'client_id': settings.LINE_CHANNEL_ID,
+        'redirect_uri': redirect_uri,
+        'state': state,
+        'scope': 'profile openid email',
+        'nonce': nonce,
+    }
+
+    authorize_url = f"https://access.line.me/oauth2/v2.1/authorize?{urlencode(params)}"
+    return redirect(authorize_url)
+
+
+@login_required
+def line_callback_view(request):
+    if request.GET.get('error'):
+        messages.error(request, 'LINE login was cancelled.')
+        return redirect('settings')
+
+    state = request.GET.get('state')
+    if not state or state != request.session.get('line_oauth_state'):
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    token_url = 'https://api.line.me/oauth2/v2.1/token'
+    redirect_uri = request.build_absolute_uri(reverse('line_callback'))
+    token_data = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_uri,
+        'client_id': settings.LINE_CHANNEL_ID,
+        'client_secret': settings.LINE_CHANNEL_SECRET,
+    }
+
+    token_response = requests.post(token_url, data=token_data, timeout=10)
+    if token_response.status_code != 200:
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    token_payload = token_response.json()
+    access_token = token_payload.get('access_token')
+    if not access_token:
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    profile_response = requests.get(
+        'https://api.line.me/v2/profile',
+        headers={'Authorization': f'Bearer {access_token}'},
+        timeout=10,
+    )
+
+    if profile_response.status_code != 200:
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    profile = profile_response.json()
+    line_user_id = profile.get('userId')
+    if not line_user_id:
+        messages.error(request, 'LINE login failed. Please try again.')
+        return redirect('settings')
+
+    existing_user = User.objects.filter(line_user_id=line_user_id).exclude(id=request.user.id).first()
+    if existing_user:
+        messages.error(request, 'This LINE account is already linked to another user.')
+        return redirect('settings')
+
+    request.user.line_user_id = line_user_id
+    request.user.line_display_name = profile.get('displayName')
+    request.user.line_picture_url = profile.get('pictureUrl')
+    request.user.line_connected_at = timezone.now()
+    request.user.save(update_fields=[
+        'line_user_id',
+        'line_display_name',
+        'line_picture_url',
+        'line_connected_at',
+    ])
+
+    messages.success(request, 'LINE account connected successfully.')
+    return redirect('settings')
+
+
+@login_required
+@require_http_methods(["POST"])
+def line_disconnect_view(request):
+    request.user.line_user_id = None
+    request.user.line_display_name = None
+    request.user.line_picture_url = None
+    request.user.line_connected_at = None
+    request.user.save(update_fields=[
+        'line_user_id',
+        'line_display_name',
+        'line_picture_url',
+        'line_connected_at',
+    ])
+    messages.success(request, 'LINE account disconnected.')
     return redirect('settings')
 
 

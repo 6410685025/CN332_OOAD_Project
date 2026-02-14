@@ -350,6 +350,10 @@
     background: linear-gradient(145deg, #2563eb 0%, #0ea5e9 100%);
   }
 
+  .social-brand.line {
+    background: linear-gradient(145deg, #22c55e 0%, #16a34a 100%);
+  }
+
   .social-info {
     padding: 18px 16px;
   }
@@ -411,6 +415,11 @@
 
   .social-btn.connect.facebook {
     background: #2563eb;
+    color: #ffffff;
+  }
+
+  .social-btn.connect.line {
+    background: #16a34a;
     color: #ffffff;
   }
 
@@ -670,6 +679,36 @@
               {% else %}
                 <span class="social-status disconnected">Not linked</span>
                 <a class="social-btn connect facebook" href="{% provider_login_url 'facebook' process='connect' %}">
+                  Connect
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="social-connection">
+            <div class="social-brand line">
+              <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="social-info">
+              <div class="social-title">LINE</div>
+              {% if user.line_user_id %}
+                <div class="social-subtitle">
+                  {{ user.line_display_name|default:"Connected" }}
+                </div>
+              {% else %}
+                <div class="social-subtitle">Not connected</div>
+              {% endif %}
+            </div>
+            <div class="social-actions">
+              {% if user.line_user_id %}
+                <span class="social-status connected">Connected</span>
+                <form method="post" action="{% url 'line_disconnect' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                </form>
+              {% else %}
+                <span class="social-status disconnected">Not linked</span>
+                <a class="social-btn connect line" href="{% url 'line_connect' %}">
                   Connect
                 </a>
               {% endif %}

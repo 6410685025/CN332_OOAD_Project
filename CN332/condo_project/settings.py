@@ -156,6 +156,10 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
+LINE_CHANNEL_ID = os.getenv('LINE_CHANNEL_ID', '')
+LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET', '')
+LINE_OA_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_OA_CHANNEL_ACCESS_TOKEN', '')
+
 # django-allauth settings
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

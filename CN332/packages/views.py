@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Package
 from .forms import PackageForm
+from users.services.line_messaging import send_line_text_message
 
 @login_required
 def package_list_view(request):
@@ -51,6 +53,19 @@ def receive_package_view(request):
             package = form.save(commit=False)
             package.handled_by = request.user.staff
             package.save()
+            resident_user = package.resident.user
+            if resident_user.line_user_id:
+                arrived_at = timezone.localtime(package.arrived_at).strftime('%d/%m/%Y %H:%M')
+                message = (
+                    f"มีพัสดุมาส่งให้คุณแล้ว\n"
+                    f"ผู้ส่ง: {package.sender}\n"
+                    f"ห้อง: {package.resident.building}-{package.resident.room_number}\n"
+                    f"เวลา: {arrived_at}"
+                )
+                try:
+                    send_line_text_message(resident_user.line_user_id, message)
+                except Exception:
+                    messages.error(request, 'ส่งข้อความ LINE ไม่สำเร็จ')
             return redirect('package_list')
     else:
         form = PackageForm()
