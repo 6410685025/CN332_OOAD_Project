@@ -495,6 +495,61 @@
   .form-label {
     font-weight: 500;
   }
+
+  @media (max-width: 768px) {
+    .settings-page-container {
+      padding: 16px 12px;
+    }
+
+    .profile-card .card-body {
+      padding: 20px;
+    }
+
+    .avatar-section {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .avatar-wrapper {
+      width: 96px;
+      height: 96px;
+    }
+
+    .user-name {
+      font-size: 1.25rem;
+    }
+
+    .edit-profile-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .residence-card {
+      text-align: left;
+    }
+
+    .security-card {
+      padding: 16px;
+    }
+
+    .social-connection {
+      grid-template-columns: 1fr;
+    }
+
+    .social-actions {
+      align-items: flex-start;
+    }
+
+    .footer-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .logout-btn {
+      justify-content: center;
+    }
+  }
 </style>
 
 <div class="settings-page-container">
@@ -719,7 +774,7 @@
 
       <!-- Action Buttons -->
       <div class="footer-actions">
-        <a href="{% url 'logout' %}" class="logout-btn">
+        <a href="{% url 'logout' %}" class="logout-btn logout-link">
           <i class="bi bi-box-arrow-right"></i>Log Out
         </a>
       </div>
