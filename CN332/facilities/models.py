@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from users.models import Resident
 
 class Facility(models.Model):
@@ -32,7 +33,33 @@ class Booking(models.Model):
     booking_date = models.DateField()
     time_slot = models.CharField(max_length=50)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    confirmation_token = models.CharField(max_length=64, blank=True, null=True)
+    confirmation_deadline = models.DateTimeField(blank=True, null=True)
+    reminder_sent_at = models.DateTimeField(blank=True, null=True)
+    confirmed_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Booking {self.id} - {self.resident} @ {self.facility}"
+
+    def get_start_end_datetimes(self):
+        start_str, end_str = self.time_slot.split('-')
+        start_hour, start_minute = [int(value) for value in start_str.split(':')]
+        end_hour, end_minute = [int(value) for value in end_str.split(':')]
+
+        tz = timezone.get_current_timezone()
+        start_dt = timezone.make_aware(
+            timezone.datetime.combine(self.booking_date, timezone.datetime.min.time()).replace(
+                hour=start_hour,
+                minute=start_minute,
+            ),
+            timezone=tz,
+        )
+        end_dt = timezone.make_aware(
+            timezone.datetime.combine(self.booking_date, timezone.datetime.min.time()).replace(
+                hour=end_hour,
+                minute=end_minute,
+            ),
+            timezone=tz,
+        )
+        return start_dt, end_dt

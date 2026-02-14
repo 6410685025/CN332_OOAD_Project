@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Package
 from .forms import PackageForm
-from users.services.line_messaging import send_line_text_message
+from users.services.line_messaging import send_line_text_message, send_line_flex_message
 
 @login_required
 def package_list_view(request):
@@ -57,15 +57,89 @@ def receive_package_view(request):
             if resident_user.line_user_id:
                 arrived_at = timezone.localtime(package.arrived_at).strftime('%d/%m/%Y %H:%M')
                 message = (
-                    f"มีพัสดุมาส่งให้คุณแล้ว\n"
-                    f"ผู้ส่ง: {package.sender}\n"
-                    f"ห้อง: {package.resident.building}-{package.resident.room_number}\n"
-                    f"เวลา: {arrived_at}"
+                    f"New package arrived\n"
+                    f"Sender: {package.sender}\n"
+                    f"Room: {package.resident.building}-{package.resident.room_number}\n"
+                    f"Time: {arrived_at}"
                 )
+                details_url = request.build_absolute_uri('/packages/')
+                bubble = {
+                    'type': 'bubble',
+                    'header': {
+                        'type': 'box',
+                        'layout': 'vertical',
+                        'backgroundColor': '#16a34a',
+                        'paddingAll': '12px',
+                        'contents': [
+                            {
+                                'type': 'text',
+                                'text': 'New Package Arrived!',
+                                'weight': 'bold',
+                                'color': '#ffffff',
+                                'size': 'md',
+                            }
+                        ],
+                    },
+                    'body': {
+                        'type': 'box',
+                        'layout': 'vertical',
+                        'spacing': 'md',
+                        'contents': [
+                            {
+                                'type': 'box',
+                                'layout': 'vertical',
+                                'contents': [
+                                    {'type': 'text', 'text': 'Sender', 'size': 'sm', 'color': '#64748b'},
+                                    {'type': 'text', 'text': package.sender, 'weight': 'bold', 'size': 'md'},
+                                ],
+                            },
+                            {
+                                'type': 'box',
+                                'layout': 'vertical',
+                                'contents': [
+                                    {'type': 'text', 'text': 'Package ID', 'size': 'sm', 'color': '#64748b'},
+                                    {'type': 'text', 'text': str(package.id), 'weight': 'bold', 'size': 'md'},
+                                ],
+                            },
+                            {
+                                'type': 'box',
+                                'layout': 'vertical',
+                                'contents': [
+                                    {'type': 'text', 'text': 'Location', 'size': 'sm', 'color': '#64748b'},
+                                    {
+                                        'type': 'text',
+                                        'text': f"Front Desk - Building {package.resident.building}",
+                                        'weight': 'bold',
+                                        'size': 'md',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    'footer': {
+                        'type': 'box',
+                        'layout': 'vertical',
+                        'contents': [
+                            {
+                                'type': 'button',
+                                'style': 'primary',
+                                'color': '#16a34a',
+                                'action': {
+                                    'type': 'uri',
+                                    'label': 'View Details',
+                                    'uri': details_url,
+                                },
+                            }
+                        ],
+                    },
+                }
                 try:
-                    send_line_text_message(resident_user.line_user_id, message)
+                    send_line_flex_message(resident_user.line_user_id, 'New package arrived', bubble)
                 except Exception:
-                    messages.error(request, 'ส่งข้อความ LINE ไม่สำเร็จ')
+                    try:
+                        send_line_text_message(resident_user.line_user_id, message)
+                    except Exception:
+                        messages.error(request, 'ส่งข้อความ LINE ไม่สำเร็จ')
             return redirect('package_list')
     else:
         form = PackageForm()

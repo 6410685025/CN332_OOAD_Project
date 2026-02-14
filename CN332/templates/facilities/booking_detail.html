@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block page_title %}Booking Detail{% endblock %}
+
+{% block extra_css %}
+<style>
+  .booking-detail-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .booking-detail-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .booking-detail-header h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .detail-grid {
+    padding: 18px 20px 10px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .detail-item label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .detail-item span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .status-pill.pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-pill.confirmed {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  .status-pill.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .status-pill.expired {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .detail-actions {
+    padding: 0 20px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .booking-detail-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-detail-card">
+  <div class="booking-detail-header">
+    <h2>{{ booking.facility.name }}</h2>
+    <span class="status-pill {% if booking.status == 'CONFIRMED' %}confirmed{% elif booking.status == 'PENDING' %}pending{% elif booking.status == 'CANCELLED' %}cancelled{% else %}expired{% endif %}">
+      {{ booking.get_status_display }}
+    </span>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <label>Date</label>
+      <span>{{ booking.booking_date|date:"M d, Y" }}</span>
+    </div>
+    <div class="detail-item">
+      <label>Time</label>
+      <span>{{ booking.time_slot }}</span>
+    </div>
+    <div class="detail-item">
+      <label>Room</label>
+      <span>{{ booking.resident.building }}-{{ booking.resident.room_number }}</span>
+    </div>
+    <div class="detail-item">
+      <label>Created</label>
+      <span>{{ booking.created_at|date:"M d, Y H:i" }}</span>
+    </div>
+  </div>
+  <div class="detail-actions">
+    {% if booking.status == 'PENDING' %}
+      <a href="{% url 'resident_confirm_booking' booking.pk %}" class="btn btn-success">Confirm Booking</a>
+      <a href="{% url 'cancel_booking' booking.pk %}" class="btn btn-outline-danger">Cancel</a>
+    {% elif booking.status == 'CONFIRMED' %}
+      <a href="{% url 'cancel_booking' booking.pk %}" class="btn btn-outline-danger">Cancel</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -102,6 +102,11 @@
     color: #b91c1c;
   }
 
+  .status-pill.expired {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
   .action-link {
     font-size: 0.8rem;
     font-weight: 600;
@@ -145,17 +150,13 @@
             <td>{{ b.booking_date|date:"M d, Y" }}</td>
             <td>{{ b.time_slot }}</td>
             <td>
-              <span class="status-pill {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% elif b.status == 'CANCELLED' %}cancelled{% else %}pending{% endif %}">
+              <span class="status-pill {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% elif b.status == 'CANCELLED' %}cancelled{% elif b.status == 'EXPIRED' %}expired{% else %}pending{% endif %}">
                 {{ b.get_status_display }}
               </span>
             </td>
             <td>
+              <a href="{% url 'booking_detail' b.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
               {% if b.status == 'PENDING' %}
-              <a href="{% url 'cancel_booking' b.pk %}" class="btn btn-sm btn-outline-danger">Cancel</a>
-              {% elif b.status == 'CANCELLED' %}
-              <a href="#" class="action-link text-primary">View Details</a>
-              {% else %}
-              <a href="{% url 'facility_list' %}" class="btn btn-sm btn-outline-secondary">View</a>
               <a href="{% url 'cancel_booking' b.pk %}" class="action-link text-danger ms-2">Cancel</a>
               {% endif %}
             </td>
