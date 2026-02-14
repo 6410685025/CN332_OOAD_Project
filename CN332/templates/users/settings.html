@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load socialaccount %}
 
 {% block page_title %}Settings{% endblock %}
 
@@ -315,6 +316,124 @@
     color: #0891b2;
   }
 
+  /* Social Connections */
+  .social-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .social-connection {
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  .social-brand {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.8rem;
+  }
+
+  .social-brand.google {
+    background: linear-gradient(145deg, #f97316 0%, #ef4444 100%);
+  }
+
+  .social-brand.facebook {
+    background: linear-gradient(145deg, #2563eb 0%, #0ea5e9 100%);
+  }
+
+  .social-info {
+    padding: 18px 16px;
+  }
+
+  .social-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+  }
+
+  .social-subtitle {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  .social-actions {
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .social-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .social-status.connected {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .social-status.disconnected {
+    background: #ffe4e6;
+    color: #9f1239;
+  }
+
+  .social-btn {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .social-btn.connect.google {
+    background: #ef4444;
+    color: #ffffff;
+  }
+
+  .social-btn.connect.facebook {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
+  .social-btn.disconnect {
+    background: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  @media (max-width: 768px) {
+    .social-connection {
+      grid-template-columns: 1fr;
+    }
+
+    .social-brand {
+      padding: 14px 0;
+    }
+
+    .social-actions {
+      align-items: flex-start;
+    }
+  }
+
   /* Footer Actions */
   .footer-actions {
     border-top: 1px solid #f3f4f6;
@@ -486,6 +605,74 @@
             <div class="flex-grow-1">
               <strong class="security-title d-block">Change Password</strong>
               <small class="security-subtitle">Update your account security</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Connections Section -->
+      <div class="section-container">
+        <h6 class="section-header">Social Connections</h6>
+        <div class="social-grid">
+          <div class="social-connection">
+            <div class="social-brand google">
+              <i class="bi bi-google"></i>
+            </div>
+            <div class="social-info">
+              <div class="social-title">Google (Email)</div>
+              {% if connected_accounts.google %}
+                <div class="social-subtitle">
+                  {{ connected_accounts.google.extra_data.email|default:user.email|default:"—" }}
+                </div>
+              {% else %}
+                <div class="social-subtitle">Not connected</div>
+              {% endif %}
+            </div>
+            <div class="social-actions">
+              {% if connected_accounts.google %}
+                <span class="social-status connected">Connected</span>
+                <form method="post" action="{% url 'social_disconnect' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="account" value="{{ connected_accounts.google.id }}">
+                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                </form>
+              {% else %}
+                <span class="social-status disconnected">Not linked</span>
+                <a class="social-btn connect google" href="{% provider_login_url 'google' process='connect' %}">
+                  Connect
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="social-connection">
+            <div class="social-brand facebook">
+              <i class="bi bi-facebook"></i>
+            </div>
+            <div class="social-info">
+              <div class="social-title">Facebook</div>
+              {% if connected_accounts.facebook %}
+                <div class="social-subtitle">
+                  {{ connected_accounts.facebook.extra_data.email|default:user.email|default:"—" }}
+                </div>
+              {% else %}
+                <div class="social-subtitle">Not connected</div>
+              {% endif %}
+            </div>
+            <div class="social-actions">
+              {% if connected_accounts.facebook %}
+                <span class="social-status connected">Connected</span>
+                <form method="post" action="{% url 'social_disconnect' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="account" value="{{ connected_accounts.facebook.id }}">
+                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                </form>
+              {% else %}
+                <span class="social-status disconnected">Not linked</span>
+                <a class="social-btn connect facebook" href="{% provider_login_url 'facebook' process='connect' %}">
+                  Connect
+                </a>
+              {% endif %}
             </div>
           </div>
         </div>

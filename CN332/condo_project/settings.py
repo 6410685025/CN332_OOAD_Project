@@ -32,6 +32,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+<<<<<<< HEAD
+=======
+    # "spritelike-pedro-nonsedentarily.ngrok-free.dev",
+>>>>>>> f43e35878f6a4da553ea6de92c037bf736c811ff
     ".ngrok-free.dev",
 ]
 
@@ -181,9 +185,15 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = False
+<<<<<<< HEAD
 SOCIALACCOUNT_ALLOW_SIGNUPS = False
+=======
+>>>>>>> f43e35878f6a4da553ea6de92c037bf736c811ff
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
+SOCIALACCOUNT_CONNECT_REDIRECT_URL = '/settings/'
+SOCIALACCOUNT_DISCONNECT_REDIRECT_URL = '/settings/'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.NoNewSocialSignupAdapter'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
