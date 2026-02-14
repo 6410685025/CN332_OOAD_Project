@@ -17,4 +17,5 @@ urlpatterns = [
     path('settings/', views.settings_view, name='settings'),
     path('settings/update-profile/', views.update_profile_view, name='update_profile'),
     path('settings/change-password/', views.change_password_view, name='change_password'),
+    path('settings/social-disconnect/', views.social_disconnect_view, name='social_disconnect'),
 ]

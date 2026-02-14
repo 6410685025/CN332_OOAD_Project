@@ -9,6 +9,9 @@ from datetime import timedelta
 from django.db import transaction
 import json
 
+from allauth.socialaccount.models import SocialAccount
+from allauth.socialaccount.views import connections
+
 from users.models import Resident, User
 from users.forms import ResidentCreationForm, ResidentProfileForm, ResidentPasswordChangeForm
 from repairs.models import RepairRequest
@@ -253,7 +256,32 @@ def delete_resident_view(request, resident_id):
 
 @login_required
 def settings_view(request):
-    return render(request, 'users/settings.html')
+    social_accounts = SocialAccount.objects.filter(user=request.user)
+    connected_accounts = {account.provider: account for account in social_accounts}
+    context = {
+        'connected_accounts': connected_accounts,
+    }
+    return render(request, 'users/settings.html', context)
+
+
+@login_required
+def social_connections_view(request):
+    if request.method == 'POST':
+        connections(request)
+        return redirect('settings')
+
+    return redirect('settings')
+
+
+@login_required
+@require_http_methods(["POST"])
+def social_disconnect_view(request):
+    account_id = request.POST.get('account')
+    if not account_id:
+        return redirect('settings')
+
+    SocialAccount.objects.filter(id=account_id, user=request.user).delete()
+    return redirect('settings')
 
 
 @login_required

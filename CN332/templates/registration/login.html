@@ -269,7 +269,14 @@
 
     <div class="login-right">
 
-        {% if form.errors %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="error-message">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% elif form.errors %}
         <div class="error-message">
             <i class="bi bi-exclamation-circle me-2"></i>
             Invalid username or password. Please try again.

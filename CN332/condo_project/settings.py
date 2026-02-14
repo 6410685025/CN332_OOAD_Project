@@ -32,7 +32,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "preadaptable-saintly-amanda.ngrok-free.dev",
+    # "spritelike-pedro-nonsedentarily.ngrok-free.dev",
+    ".ngrok-free.dev",
 ]
 
 
@@ -180,9 +181,12 @@ SOCIALACCOUNT_PROVIDERS = {
 
 ACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_LOGIN_ON_GET = True
-SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNUP = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
+SOCIALACCOUNT_CONNECT_REDIRECT_URL = '/settings/'
+SOCIALACCOUNT_DISCONNECT_REDIRECT_URL = '/settings/'
+SOCIALACCOUNT_ADAPTER = 'users.adapters.NoNewSocialSignupAdapter'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
