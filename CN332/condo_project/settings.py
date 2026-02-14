@@ -163,7 +163,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'APP': {
             'client_id':  os.getenv('GOOGLE_CLIENT_ID', ''),
             'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
-        }
+        },
+        "EMAIL_AUTHENTICATION": True
     },
     'facebook': {
         'METHOD': 'oauth2',
@@ -172,7 +173,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'APP': {
             'client_id': os.getenv('FACEBOOK_APP_ID', ''),
             'secret': os.getenv('FACEBOOK_APP_SECRET', ''),
-        }
+        },
+        "EMAIL_AUTHENTICATION": True
     }
 }
 
