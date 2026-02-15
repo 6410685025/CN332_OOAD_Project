@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block page_title %}Announcement{% endblock %}
+
+{% block extra_css %}
+<style>
+  .announcement-detail-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    padding: 24px;
+  }
+
+  .announcement-category {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .announcement-category.emergency {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .announcement-category.general {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .announcement-category.maintenance {
+    background: #fef3c7;
+    color: #78350f;
+  }
+
+  .announcement-category.events {
+    background: #f3e8ff;
+    color: #6b21a8;
+  }
+
+  .announcement-category.policies {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .announcement-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .announcement-date {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+
+  .announcement-content {
+    color: #374151;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="announcement-detail-card">
+  <div class="announcement-category {{ announcement.category|lower }}">
+    {{ announcement.get_category_display }}
+  </div>
+  <div class="announcement-title">{{ announcement.title }}</div>
+  <div class="announcement-date">{{ announcement.publish_date|date:"M d, Y H:i" }}</div>
+  <div class="announcement-content">{{ announcement.content }}</div>
+</div>
+{% endblock %}

@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Avg, Q
 import json
 from .models import RepairRequest, WorkLog, RepairImage
 from .forms import RepairRequestForm, AssignTechnicianForm, AssignStaffForm, UpdateRepairStatusForm, UpdateComplaintStatusForm, RatingForm, RepairImageForm
+from django.shortcuts import render, redirect
+from django.utils import timezone
 
 @login_required
 def create_repair_view(request):
@@ -197,3 +199,77 @@ def rate_repair_view(request, pk):
         form = RatingForm()
     
     return render(request, 'repairs/rate_repair.html', {'form': form, 'repair': repair})
+
+
+@login_required
+def technician_work_history_view(request):
+    if not request.user.is_technician:
+        return redirect('dashboard')
+
+    tech = request.user.technician
+
+    # base queryset: งานที่เสร็จแล้วของช่างคนนี้
+    qs = RepairRequest.objects.filter(
+        technician=tech,
+        status='COMPLETED'
+    ).select_related('resident', 'technician__user').order_by('-created_at')
+
+    # -----------------------
+    # Filters (เหมือนใน UI)
+    # -----------------------
+    q = request.GET.get('q', '').strip()
+    date_range = request.GET.get('date_range', '30')   # 30 / 90 / all
+    repair_type = request.GET.get('repair_type', 'ALL')  # ALL / MAINTENANCE / COMPLAINT
+    rating = request.GET.get('rating', 'ALL')  # ALL / 5 / 4 / 3 / 2 / 1
+
+    if q:
+        # รองรับค้นหา id หรือ keyword
+        if q.isdigit():
+            qs = qs.filter(id=int(q))
+        else:
+            qs = qs.filter(
+                Q(location__icontains=q) |
+                Q(description__icontains=q) |
+                Q(request_type__icontains=q)
+            )
+
+    if date_range != 'all':
+        days = int(date_range)
+        since = timezone.now() - timezone.timedelta(days=days)
+        qs = qs.filter(created_at__gte=since)
+
+    if repair_type != 'ALL':
+        qs = qs.filter(request_type=repair_type)
+
+    if rating != 'ALL':
+        qs = qs.filter(rating=int(rating))
+
+    # -----------------------
+    # Stats cards
+    # -----------------------
+    total_completed = RepairRequest.objects.filter(technician=tech, status='COMPLETED').count()
+
+    avg_rating = (
+        RepairRequest.objects.filter(technician=tech, status='COMPLETED', rating__isnull=False)
+        .aggregate(avg=Avg('rating'))['avg']
+    ) or 0.0
+
+    now = timezone.localtime(timezone.now())
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    this_month_count = RepairRequest.objects.filter(
+        technician=tech, status='COMPLETED', created_at__gte=month_start
+    ).count()
+
+    context = {
+        'repairs': qs,
+        'total_completed': total_completed,
+        'avg_rating': round(float(avg_rating), 1),
+        'this_month_count': this_month_count,
+
+        # keep filters selected
+        'q': q,
+        'date_range': date_range,
+        'repair_type': repair_type,
+        'rating_filter': rating,
+    }
+    return render(request, 'repairs/technician_work_history.html', context)

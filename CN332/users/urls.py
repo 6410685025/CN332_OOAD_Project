@@ -17,4 +17,8 @@ urlpatterns = [
     path('settings/', views.settings_view, name='settings'),
     path('settings/update-profile/', views.update_profile_view, name='update_profile'),
     path('settings/change-password/', views.change_password_view, name='change_password'),
+    path('settings/social-disconnect/', views.social_disconnect_view, name='social_disconnect'),
+    path('settings/line/connect/', views.line_connect_view, name='line_connect'),
+    path('settings/line/callback/', views.line_callback_view, name='line_callback'),
+    path('settings/line/disconnect/', views.line_disconnect_view, name='line_disconnect'),
 ]

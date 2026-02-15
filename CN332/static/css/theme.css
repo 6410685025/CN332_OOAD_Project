@@ -37,11 +37,13 @@ body {
   left: 0;
   width: 260px;
   height: 100vh;
+  height: 100dvh;
   background: var(--sidebar-bg);
   padding: 0;
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .sidebar-brand {
@@ -123,6 +125,7 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  margin-left: 16px;
 }
 
 .user-dropdown .dropdown-toggle {
@@ -131,6 +134,10 @@ body {
   gap: 10px;
   text-decoration: none;
   color: var(--text-secondary);
+}
+
+.user-dropdown .dropdown-toggle::after {
+  display: none;
 }
 
 .user-avatar {
@@ -268,6 +275,84 @@ body {
 @media (max-width: 768px) {
   .dashboard-stats-row {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ========== Mobile responsiveness ========== */
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    width: 260px;
+    max-width: 85vw;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .top-header {
+    padding: 16px 20px;
+    margin: 0 -20px 20px -20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .content-inner {
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    margin-left: 0;
+    text-align: left;
+    flex: 1;
+  }
+
+  .user-dropdown .dropdown-toggle span {
+    display: none;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    z-index: 900;
+    display: none;
+  }
+
+  .sidebar-backdrop.show {
+    display: block;
+  }
+
+  body.sidebar-open,
+  html.sidebar-open {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-inner {
+    padding: 16px;
+  }
+
+  .card {
+    border-radius: 12px;
+  }
+
+  .table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table th,
+  .table td {
+    white-space: nowrap;
   }
 }
 

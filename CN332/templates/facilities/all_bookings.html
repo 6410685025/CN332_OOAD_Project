@@ -91,6 +91,11 @@
         color: #b91c1c;
     }
 
+    .status-pill.expired {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
     .action-link {
         font-size: 0.8rem;
         font-weight: 600;
@@ -138,7 +143,7 @@
                         <td>{{ b.booking_date|date:"d M Y" }}</td>
                         <td>{{ b.time_slot }}</td>
                         <td>
-                            <span class="status-pill {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% elif b.status == 'CANCELLED' %}cancelled{% else %}pending{% endif %}">
+                            <span class="status-pill {% if b.status == 'CONFIRMED' %}confirmed{% elif b.status == 'PENDING' %}pending{% elif b.status == 'CANCELLED' %}cancelled{% elif b.status == 'EXPIRED' %}expired{% else %}pending{% endif %}">
                                 {{ b.get_status_display }}
                             </span>
                         </td>

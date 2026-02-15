@@ -1,3 +1,4 @@
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -176,6 +177,60 @@
             font-size: 0.9rem;
         }
 
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider::before {
+            margin-right: 15px;
+        }
+
+        .divider::after {
+            margin-left: 15px;
+        }
+
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            color: #334155;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-google:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-google img {
+            width: 22px;
+            height: 22px;
+        }
+
         @media (max-width: 900px) {
             .login-left {
                 display: none;
@@ -214,7 +269,14 @@
 
     <div class="login-right">
 
-        {% if form.errors %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="error-message">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% elif form.errors %}
         <div class="error-message">
             <i class="bi bi-exclamation-circle me-2"></i>
             Invalid username or password. Please try again.
@@ -243,6 +305,17 @@
                 Sign In <i class="bi bi-arrow-right ms-2"></i>
             </button>
         </form>
+
+        <div class="divider">or continue with</div>
+
+        <a href="{% provider_login_url 'google' %}" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+            Sign in with Google
+        </a>
+        <a href="{% provider_login_url 'facebook' %}" class="btn-google mt-3">
+    <i class="bi bi-facebook text-primary fs-4"></i>
+    Sign in with Facebook
+</a>
     </div>
 </body>
 
