@@ -695,10 +695,10 @@
             <div class="social-actions">
               {% if connected_accounts.google %}
                 <span class="social-status connected">Connected</span>
-                <form method="post" action="{% url 'social_disconnect' %}">
+                <form method="post" action="{% url 'social_disconnect' %}" class="disconnect-form">
                   {% csrf_token %}
                   <input type="hidden" name="account" value="{{ connected_accounts.google.id }}">
-                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                  <button type="submit" class="social-btn disconnect disconnect-btn" data-provider="Google account">Disconnect</button>
                 </form>
               {% else %}
                 <span class="social-status disconnected">Not linked</span>
@@ -726,10 +726,10 @@
             <div class="social-actions">
               {% if connected_accounts.facebook %}
                 <span class="social-status connected">Connected</span>
-                <form method="post" action="{% url 'social_disconnect' %}">
+                <form method="post" action="{% url 'social_disconnect' %}" class="disconnect-form">
                   {% csrf_token %}
                   <input type="hidden" name="account" value="{{ connected_accounts.facebook.id }}">
-                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                  <button type="submit" class="social-btn disconnect disconnect-btn" data-provider="Facebook account">Disconnect</button>
                 </form>
               {% else %}
                 <span class="social-status disconnected">Not linked</span>
@@ -757,9 +757,9 @@
             <div class="social-actions">
               {% if user.line_user_id %}
                 <span class="social-status connected">Connected</span>
-                <form method="post" action="{% url 'line_disconnect' %}">
+                <form method="post" action="{% url 'line_disconnect' %}" class="disconnect-form">
                   {% csrf_token %}
-                  <button type="submit" class="social-btn disconnect">Disconnect</button>
+                  <button type="submit" class="social-btn disconnect disconnect-btn" data-provider="LINE account">Disconnect</button>
                 </form>
               {% else %}
                 <span class="social-status disconnected">Not linked</span>
@@ -777,6 +777,24 @@
         <a href="{% url 'logout' %}" class="logout-btn logout-link">
           <i class="bi bi-box-arrow-right"></i>Log Out
         </a>
+      </div>
+
+      <div class="modal fade" id="disconnectConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirm Disconnect</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to disconnect <span id="disconnectProviderName">this account</span>?
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="confirmDisconnectBtn">Disconnect</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="successAlert" class="alert alert-success d-none mt-3" role="alert"></div>
@@ -1063,6 +1081,25 @@
     alert.classList.remove('d-none');
     setTimeout(() => alert.classList.add('d-none'), 4000);
   }
+
+  let pendingDisconnectForm = null;
+
+  document.querySelectorAll('.disconnect-btn').forEach(function (button) {
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      pendingDisconnectForm = button.closest('form');
+      const providerName = button.getAttribute('data-provider') || 'this account';
+      document.getElementById('disconnectProviderName').textContent = providerName;
+      const modal = new bootstrap.Modal(document.getElementById('disconnectConfirmModal'));
+      modal.show();
+    });
+  });
+
+  document.getElementById('confirmDisconnectBtn').addEventListener('click', function () {
+    if (pendingDisconnectForm) {
+      pendingDisconnectForm.submit();
+    }
+  });
 
   // Close modals when clicking backdrop
   document.getElementById('editProfileBackdrop').addEventListener('click', closeEditProfileModal);
