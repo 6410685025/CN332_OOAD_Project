@@ -17,8 +17,9 @@
 - **Iteration 5 –  requirent-> implementation**  
   👉 [View Presentation](https://www.canva.com/design/DAHAnygwA58/4ijC4TgvWzVLvlnkJDayLw/view?utm_content=DAHAnygwA58&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h024b39c394)
 
-- **Iteration 6 –  Implement user / login**  
+- **Iteration 6 –  Implement user / login**
   👉 [View Presentation](https://www.canva.com/design/DAHBSm8C3ak/AmCgWYoRtgMes533DgR9CQ/view?utm_content=DAHBSm8C3ak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h17e7430860)
+  📌 **Presented in Class — 16 February 2026**  
 
 ---
 ## 🏘 Overview
