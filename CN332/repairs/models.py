@@ -61,3 +61,26 @@ class RepairImage(models.Model):
 
     def __str__(self):
         return f"{self.image_type} image for Request {self.repair_request.id}"
+    
+class RepairStatusUpdate(models.Model):
+    repair_request = models.ForeignKey(
+        RepairRequest,
+        on_delete=models.CASCADE,
+        related_name='status_updates'
+    )
+    status = models.CharField(max_length=20, choices=RepairRequest.STATUS_CHOICES)
+    note = models.TextField(blank=True, null=True)
+    image = models.ImageField(
+        upload_to='repair_updates/',
+        null=True,
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif', 'webp'])]
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_by = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Update #{self.id} for Request {self.repair_request.id} -> {self.status}"

@@ -59,9 +59,27 @@ class AssignStaffForm(forms.ModelForm):
         self.fields['assigned_staff'].label = 'Select Staff Member'
 
 class UpdateRepairStatusForm(forms.ModelForm):
+    note = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'อธิบายรายละเอียดการอัปเดตสถานะ (เช่น ทำอะไรไปแล้ว/พบปัญหาอะไร/นัดหมาย ฯลฯ)'
+        }),
+        required=False,
+        label='Description / Work Note'
+    )
+    image = forms.ImageField(
+        required=False,
+        label='Upload update image (optional)',
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*'
+        })
+    )
+
     class Meta:
         model = RepairRequest
-        fields = ['status']
+        fields = ['status']  # สถานะยังผูกกับ RepairRequest เหมือนเดิม
         widgets = {
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -89,3 +107,4 @@ class RatingForm(forms.Form):
         choices=[(i, f'{i} ⭐') for i in range(1, 6)],
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
     )
+
