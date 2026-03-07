@@ -19,7 +19,12 @@
 
 - **Iteration 6 –  Implement user / login**
   👉 [View Presentation](https://www.canva.com/design/DAHBSm8C3ak/AmCgWYoRtgMes533DgR9CQ/view?utm_content=DAHBSm8C3ak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h17e7430860)
-  📌 **Presented in Class — 16 February 2026**  
+  📌 **Presented in Class — 16 February 2026**
+
+- **Iteration 7 –  Implement plan**
+  👉 [View Presentation](https://www.canva.com/design/DAHDPyPor9A/rXBbGE3GPczLKtlRI2oZNQ/view?utm_content=DAHDPyPor9A&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h21a50d5239)
+
+ 
 
 ---
 ## 🏘 Overview
