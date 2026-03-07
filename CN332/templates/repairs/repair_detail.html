@@ -466,50 +466,10 @@
         <!-- Status Timeline -->
         <div class="timeline-section">
           <div class="timeline-header">Status Timeline</div>
-          
+
           <div class="timeline-list">
-            {% if repair.status == 'ON_PROCESS' or repair.status == 'COMPLETED' %}
-            <div class="timeline-item">
-              <div class="timeline-icon-wrapper">
-                <div class="timeline-icon blue-icon">
-                  <i class="bi bi-play-circle-fill"></i>
-                </div>
-              </div>
-              <div class="timeline-body">
-                <h6 class="timeline-title">Work In Progress</h6>
-                <p class="timeline-desc">Arrived at location. Began initial work. Issue: compressor malfunction detected.</p>
-                <div class="timeline-meta">
-                  <div class="timeline-user">
-                    <i class="bi bi-person-circle"></i>
-                    <span>{% if repair.technician %}{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}{% else %}Robert Anderson{% endif %}</span>
-                  </div>
-                  <span class="timeline-time">25 minutes ago</span>
-                </div>
-              </div>
-            </div>
-            {% endif %}
 
-            {% if repair.status == 'COMPLETED' or repair.technician or repair.assigned_staff %}
-            <div class="timeline-item">
-              <div class="timeline-icon-wrapper">
-                <div class="timeline-icon purple-icon">
-                  <i class="bi bi-check-circle-fill"></i>
-                </div>
-              </div>
-              <div class="timeline-body">
-                <h6 class="timeline-title">Job Accepted</h6>
-                <p class="timeline-desc">Job has been accepted and assigned to technician. Preparing tools and expected delivery within 2 hours.</p>
-                <div class="timeline-meta">
-                  <div class="timeline-user">
-                    <i class="bi bi-person-circle"></i>
-                    <span>{% if repair.technician %}{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}{% elif repair.assigned_staff %}{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username }}{% else %}Robert Anderson{% endif %}</span>
-                  </div>
-                  <span class="timeline-time">2 hours ago</span>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
+            <!-- Request Created -->
             <div class="timeline-item">
               <div class="timeline-icon-wrapper">
                 <div class="timeline-icon orange-icon">
@@ -518,16 +478,73 @@
               </div>
               <div class="timeline-body">
                 <h6 class="timeline-title">Request Created</h6>
-                <p class="timeline-desc">Maintenance request submitted by resident. Awaiting technician assignment.</p>
+                <p class="timeline-desc">
+                  Maintenance request submitted by resident.
+                </p>
                 <div class="timeline-meta">
                   <div class="timeline-user">
                     <i class="bi bi-person-circle"></i>
                     <span>{{ repair.resident.user.get_full_name|default:repair.resident.user.username }}</span>
                   </div>
-                  <span class="timeline-time">{{ repair.created_at|date:"M d, Y" }} at {{ repair.created_at|time:"g:i A" }}</span>
+                  <span class="timeline-time">
+                    {{ repair.created_at|date:"M d, Y g:i A" }}
+                  </span>
                 </div>
               </div>
             </div>
+
+            <!-- Dynamic Updates -->
+            {% for u in updates %}
+            <div class="timeline-item">
+              <div class="timeline-icon-wrapper">
+                <div class="timeline-icon
+                  {% if u.status == 'COMPLETED' %}purple-icon
+                  {% elif u.status == 'ON_PROCESS' %}blue-icon
+                  {% else %}orange-icon{% endif %}">
+                  {% if u.status == 'COMPLETED' %}
+                    <i class="bi bi-check-circle-fill"></i>
+                  {% elif u.status == 'ON_PROCESS' %}
+                    <i class="bi bi-play-circle-fill"></i>
+                  {% else %}
+                    <i class="bi bi-hourglass-split"></i>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="timeline-body">
+                <h6 class="timeline-title">{{ u.get_status_display }}</h6>
+
+                {% if u.note %}
+                  <p class="timeline-desc">{{ u.note|linebreaksbr }}</p>
+                {% endif %}
+
+                {% if u.image %}
+                  <div class="image-thumbnail mt-2"
+                      style="max-width:260px"
+                      onclick="openImageModal('{{ u.image.url }}')">
+                    <img src="{{ u.image.url }}">
+                  </div>
+                {% endif %}
+
+                <div class="timeline-meta">
+                  <div class="timeline-user">
+                    <i class="bi bi-person-circle"></i>
+                    <span>
+                      {% if u.updated_by %}
+                        {{ u.updated_by.get_full_name|default:u.updated_by.username }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </span>
+                  </div>
+                  <span class="timeline-time">
+                    {{ u.created_at|date:"M d, Y g:i A" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+
           </div>
         </div>
 
@@ -575,14 +592,13 @@
         <div class="images-section">
           <div class="images-label">BEFORE</div>
           <div class="images-grid">
-            {% for image in repair.images.all %}
-              {% if image.image_type == 'BEFORE' %}
-                <div class="image-thumbnail" onclick="openImageModal('{{ image.image.url }}')">
-                  <img src="{{ image.image.url }}" alt="Before photo">
-                </div>
-              {% endif %}
+            {% for image in before_images %}
+              <div class="image-thumbnail"
+                  onclick="openImageModal('{{ image.image.url }}')">
+                <img src="{{ image.image.url }}">
+              </div>
             {% empty %}
-              <div class="no-images-placeholder">No images yet</div>
+              <div class="no-images-placeholder">No BEFORE images</div>
             {% endfor %}
           </div>
         </div>
@@ -591,14 +607,13 @@
         <div class="images-section">
           <div class="images-label">AFTER</div>
           <div class="images-grid">
-            {% for image in repair.images.all %}
-              {% if image.image_type == 'AFTER' %}
-                <div class="image-thumbnail" onclick="openImageModal('{{ image.image.url }}')">
-                  <img src="{{ image.image.url }}" alt="After photo">
-                </div>
-              {% endif %}
+            {% for image in after_images %}
+              <div class="image-thumbnail"
+                  onclick="openImageModal('{{ image.image.url }}')">
+                <img src="{{ image.image.url }}">
+              </div>
             {% empty %}
-              <div class="no-images-placeholder">No images yet</div>
+              <div class="no-images-placeholder">No AFTER images</div>
             {% endfor %}
           </div>
         </div>

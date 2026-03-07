@@ -458,26 +458,46 @@
         displayImages();
     }
 
-    // Handle form submission with image data
-    document.querySelector('form').addEventListener('submit', function(e) {
-        if (uploadedImages.length > 0) {
-            // Create FormData to handle file uploads
-            const formData = new FormData(this);
-            
-            // Clear existing files
-            formData.delete('image');
-            
-            // Add images to form
-            uploadedImages.forEach((imageData, index) => {
-                formData.append(`image_${imageData.id}`, imageData.file);
-                formData.append(`image_type_${imageData.id}`, imageData.type);
-            });
-            
-            // Store images data in hidden field
-            formData.append('images_data', JSON.stringify(uploadedImages.map(img => ({
+    // ✅ FIXED SUBMIT: ส่งไฟล์จริงเข้า Django
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        if (uploadedImages.length === 0) {
+            return; // ให้ submit แบบปกติได้
+        }
+
+        e.preventDefault();
+
+        const form = this;
+        const formData = new FormData(form);
+
+        // ใส่ไฟล์ทั้งหมดลงไปให้ backend อ่านเป็น request.FILES['image_<id>']
+        uploadedImages.forEach((img) => {
+            formData.append(`image_${img.id}`, img.file);
+        });
+
+        // ส่ง meta ให้ backend (id + type)
+        formData.set('images_data', JSON.stringify(
+            uploadedImages.map(img => ({
                 id: img.id,
                 type: img.type
-            }))));
+            }))
+        ));
+
+        try {
+            const resp = await fetch(form.action || window.location.href, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (resp.redirected) {
+                window.location.href = resp.url;
+                return;
+            }
+
+            // fallback
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            alert('Upload failed. Please try again.');
         }
     });
 </script>

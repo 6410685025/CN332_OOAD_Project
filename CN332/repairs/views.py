@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q
 import json
-from .models import RepairRequest, WorkLog, RepairImage
+from .models import RepairRequest, WorkLog, RepairImage, RepairStatusUpdate
 from .forms import RepairRequestForm, AssignTechnicianForm, AssignStaffForm, UpdateRepairStatusForm, UpdateComplaintStatusForm, RatingForm, RepairImageForm
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -83,7 +83,12 @@ def repair_list_view(request):
 def repair_detail_view(request, pk):
     repair = get_object_or_404(RepairRequest, pk=pk)
     logs = repair.logs.all().order_by('-timestamp')
-    
+    # ✅ สำหรับ timeline
+    updates = repair.status_updates.order_by('created_at')
+
+    # ✅ สำหรับ BEFORE / AFTER
+    before_images = repair.images.filter(image_type='BEFORE')
+    after_images = repair.images.filter(image_type='AFTER')
     # Handle complaint status update by staff
     complaint_form = None
     if (request.user.is_staff_member and 
@@ -111,9 +116,12 @@ def repair_detail_view(request, pk):
             complaint_form = UpdateComplaintStatusForm(instance=repair)
     
     return render(request, 'repairs/repair_detail.html', {
-        'repair': repair, 
+        'repair': repair,
         'logs': logs,
-        'complaint_form': complaint_form
+        'updates': updates,
+        'before_images': before_images,
+        'after_images': after_images,
+        'complaint_form': complaint_form,
     })
 
 # Staff assigns technician or staff to repair
@@ -161,22 +169,61 @@ def assign_technician_view(request, pk):
 def update_repair_status_view(request, pk):
     if not request.user.is_technician:
         return redirect('dashboard')
-    
-    repair = get_object_or_404(RepairRequest, pk=pk, technician=request.user.technician)
-    
+
+    repair = get_object_or_404(
+        RepairRequest,
+        pk=pk,
+        technician=request.user.technician
+    )
+
     if request.method == 'POST':
-        form = UpdateRepairStatusForm(request.POST, instance=repair)
+        form = UpdateRepairStatusForm(request.POST, request.FILES, instance=repair)
         if form.is_valid():
-            form.save()
+            old_status = repair.status
+            repair.status = form.cleaned_data['status']
+            repair.save()
+
+            note = form.cleaned_data.get('note')
+            image = form.cleaned_data.get('image')
+
+            # ✅ Timeline item
+            RepairStatusUpdate.objects.create(
+                repair_request=repair,
+                status=repair.status,
+                note=note,
+                image=image,
+                updated_by=request.user
+            )
+
+            # ✅ AFTER image (เฉพาะตอน COMPLETED)
+            if repair.status == 'COMPLETED' and image:
+                RepairImage.objects.create(
+                    repair_request=repair,
+                    image=image,
+                    image_type='AFTER',
+                    uploaded_by=request.user
+                )
+
+            # log เดิม
             WorkLog.objects.create(
                 repair_request=repair,
-                description=f"Status updated to: {repair.get_status_display()}"
+                description=f"Status updated: {old_status} -> {repair.get_status_display()}"
             )
-            return redirect('repair_list')
+
+            if note:
+                WorkLog.objects.create(
+                    repair_request=repair,
+                    description=f"Note: {note}"
+                )
+
+            return redirect('repair_detail', pk=pk)
     else:
         form = UpdateRepairStatusForm(instance=repair)
-    
-    return render(request, 'repairs/update_status.html', {'form': form, 'repair': repair})
+
+    return render(request, 'repairs/update_status.html', {
+        'repair': repair,
+        'form': form
+    })
 
 # Resident rates completed repair
 @login_required
