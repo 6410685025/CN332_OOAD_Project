@@ -13,6 +13,46 @@
     {% block extra_css %}{% endblock %}
 
     <style>
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+
+        .top-header-left {
+            min-width: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-header-right {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title {
+            margin: 0;
+            padding: 0;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        .user-dropdown {
+            margin: 0;
+        }
+
+        .user-dropdown .dropdown-toggle {
+            gap: 8px;
+        }
+
         /* Sidebar toggle button - hidden on desktop */
         #sidebarToggle {
             display: none;
@@ -122,6 +162,23 @@
                 margin-left: 0;
             }
 
+            .top-header {
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+
+            .top-header-left {
+                gap: 8px;
+            }
+
+            .top-header-right {
+                margin-left: auto;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
+            }
+
             .sidebar-backdrop.show {
                 display: block;
             }
@@ -144,15 +201,20 @@
             }
 
             .page-title {
-                padding-left: 8px;
+                font-size: 1.05rem;
+                padding-left: 4px;
             }
 
-            .user-dropdown {
-                margin-right: 8px;
+            .top-header-left {
+                gap: 6px;
             }
 
             .user-dropdown .dropdown-toggle {
                 gap: 4px;
+            }
+
+            .top-header-right {
+                margin-left: 6px;
             }
 
             .user-avatar {
@@ -267,29 +329,37 @@
 
 <!-- Main Content -->
 <main class="main-content">
-    <div class="top-header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn btn-sm btn-outline-secondary ms-3">
-            <i class="bi bi-list"></i>
-        </button>
+    <div class="top-header">
+        <div class="top-header-left">
+            <button id="sidebarToggle" class="btn btn-sm btn-outline-secondary" aria-label="Open menu">
+                <i class="bi bi-list"></i>
+            </button>
 
-        <h1 class="page-title px-4 mb-0">
-            {% block page_title %}Dashboard{% endblock %}
-        </h1>
+            <h1 class="page-title">
+                {% block page_title %}Dashboard{% endblock %}
+            </h1>
+        </div>
 
-        <div class="user-dropdown dropdown ms-auto me-4">
-            <a href="#" class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
-                <div class="user-avatar me-2">
-                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
-                </div>
-                <span>{{ user.get_full_name|default:user.username }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item" href="{% url 'logout' %}">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                    </a>
-                </li>
-            </ul>
+        <div class="top-header-right">
+            <div class="user-dropdown dropdown">
+                <a href="#" class="dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown" aria-label="User menu">
+                            <div class="user-avatar avatar-md">
+                                {% if user.profile_photo %}
+                                    <img src="{{ user.profile_photo.url }}" alt="{{ user.get_full_name|default:user.username }}" class="avatar-img">
+                                {% else %}
+                                    {{ user.get_full_name|default:user.username|slice:":1"|upper }}
+                                {% endif %}
+                            </div>
+                            <span>{{ user.get_full_name|default:user.username }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 

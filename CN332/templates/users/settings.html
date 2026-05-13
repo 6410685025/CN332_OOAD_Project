@@ -573,7 +573,7 @@
       <div class="d-flex align-items-center gap-5 avatar-section">
         <div class="avatar-wrapper">
           {% if user.profile_photo %}
-            <img id="avatarDisplay" src="{{ user.profile_photo.url }}" />
+            <img id="avatarDisplay" src="{{ user.profile_photo.url }}" class="avatar-img" />
           {% else %}
             <div id="avatarDisplay" class="avatar-placeholder">
               {{ user.get_full_name|default:user.username|slice:":1"|upper }}

@@ -363,7 +363,7 @@
       </thead>
       <tbody>
         {% for repair in repairs %}
-        <tr onclick="window.location.href='{% url 'repair_detail' repair.pk %}'">
+        <tr class="clickable-row" data-href="{% url 'repair_detail' repair.pk %}">
           <td>
             <span class="request-id">REQ-{{ repair.id|stringformat:"04d" }}</span>
           </td>
@@ -387,12 +387,24 @@
           <td>
             {% if repair.technician %}
             <div class="d-flex align-items-center">
-              <span class="technician-avatar">{{ repair.technician.user.get_full_name|default:repair.technician.user.username|slice:":1"|upper }}</span>
+              <span class="technician-avatar avatar-sm">
+                {% if repair.technician.user.profile_photo %}
+                  <img src="{{ repair.technician.user.profile_photo.url }}" alt="{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}" class="avatar-img">
+                {% else %}
+                  {{ repair.technician.user.get_full_name|default:repair.technician.user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
               <span class="technician-name">{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}</span>
             </div>
             {% elif repair.assigned_staff %}
             <div class="d-flex align-items-center">
-              <span class="technician-avatar">{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username|slice:":1"|upper }}</span>
+              <span class="technician-avatar avatar-sm">
+                {% if repair.assigned_staff.user.profile_photo %}
+                  <img src="{{ repair.assigned_staff.user.profile_photo.url }}" alt="{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username }}" class="avatar-img">
+                {% else %}
+                  {{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
               <span class="technician-name">{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username }}</span>
             </div>
             {% else %}
@@ -412,5 +424,16 @@
     </table>
   </div>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function () {
+        const href = this.dataset.href;
+        if (href) window.location.href = href;
+      });
+    });
+  });
+</script>
 {% endblock %}
 

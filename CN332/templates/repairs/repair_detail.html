@@ -413,7 +413,7 @@
 
 {% block content %}
 <div class="detail-container">
-  <div class="header-back" onclick="window.location.href='{% url 'repair_list' %}'">
+  <div class="header-back" data-href="{% url 'repair_list' %}">
     <i class="bi bi-arrow-left"></i>
     <span>Job Details #REP-{{ repair.id|stringformat:"04d" }}</span>
   </div>
@@ -434,7 +434,13 @@
           <div class="info-field">
             <span class="info-label">Reporter Name</span>
             <div class="info-value">
-              <span class="user-icon">{{ repair.resident.user.get_full_name|default:repair.resident.user.username|slice:":1"|upper }}</span>
+              <span class="user-icon avatar-sm">
+                {% if repair.resident.user.profile_photo %}
+                  <img src="{{ repair.resident.user.profile_photo.url }}" alt="{{ repair.resident.user.get_full_name|default:repair.resident.user.username }}" class="avatar-img">
+                {% else %}
+                  {{ repair.resident.user.get_full_name|default:repair.resident.user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
               <span>{{ repair.resident.user.get_full_name|default:repair.resident.user.username }}</span>
             </div>
           </div>
@@ -666,6 +672,15 @@
     if (e.key === 'Escape') {
       closeImageModal();
     }
+  });
+
+  // Back button handler (use data-href to avoid inline JS quoting issues)
+  document.querySelectorAll('.header-back[data-href]').forEach(function(el){
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(){
+      const href = this.dataset.href;
+      if (href) window.location.href = href;
+    });
   });
 </script>
 {% endblock %}

@@ -106,17 +106,19 @@ body {
 
 .content-inner {
   flex: 1;
-  padding: 24px 32px;
+  padding: 28px 36px;
 }
 
 /* Top header bar */
 .top-header {
   background: var(--card-bg);
-  padding: 16px 32px;
-  margin: 0 -32px 24px -32px;
+  padding: 14px 22px;
+  margin: 0 0 24px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   box-shadow: var(--card-shadow);
 }
 
@@ -125,7 +127,17 @@ body {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
-  margin-left: 16px;
+  margin-left: 0;
+}
+
+@media (min-width: 1400px) {
+  .content-inner {
+    padding: 32px 44px;
+  }
+
+  .top-header {
+    padding: 16px 26px;
+  }
 }
 
 .user-dropdown .dropdown-toggle {
@@ -152,6 +164,21 @@ body {
   font-weight: 600;
   font-size: 1rem;
 }
+
+/* Avatar image helper - use where user uploaded a photo */
+.avatar-img,
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Small avatar variants */
+.avatar-sm { width: 28px; height: 28px; font-size: 0.75rem; }
+.avatar-md { width: 40px; height: 40px; font-size: 1rem; }
+.avatar-lg { width: 56px; height: 56px; font-size: 1.25rem; }
 
 /* ========== Cards ========== */
 .card {

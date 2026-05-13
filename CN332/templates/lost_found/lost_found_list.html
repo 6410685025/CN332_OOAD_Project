@@ -334,8 +334,8 @@
     }
 
     .person-avatar {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         background: #e0e7ff;
         display: flex;
@@ -343,7 +343,16 @@
         justify-content: center;
         font-weight: 600;
         color: #4f46e5;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        overflow: hidden;
+    }
+
+    .person-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: inline-block;
+        border-radius: 50%;
     }
 
     .person-name {
@@ -876,7 +885,13 @@
           <td class="item-id">LF-{{ item.id|stringformat:"04d" }}</td>
           <td>
             <div class="person-info">
-              <div class="person-avatar">{{ item.reporter.user.first_name.0|default:"U" }}{{ item.reporter.user.last_name.0|default:"" }}</div>
+                            <div class="person-avatar">
+                                {% if item.reporter.user.profile_photo %}
+                                    <img src="{{ item.reporter.user.profile_photo.url }}" alt="{{ item.reporter.user.get_full_name|default:item.reporter.user.username }}" class="avatar-img">
+                                {% else %}
+                                    {{ item.reporter.user.first_name.0|default:"U" }}{{ item.reporter.user.last_name.0|default:"" }}
+                                {% endif %}
+                            </div>
               <span class="person-name">{{ item.reporter.user.get_full_name|default:item.reporter.user.username }}</span>
             </div>
           </td>
