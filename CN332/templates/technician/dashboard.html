@@ -67,7 +67,7 @@
                             <td>{{ repair.location }}</td>
                             <td>{{ repair.description|truncatechars:40 }}</td>
                             <td>
-                                <span class="badge-pill {% if repair.status == 'COMPLETED' %}bg-success{% elif repair.status == 'ON_PROCESS' %}bg-info{% else %}bg-warning{% endif %}">{{ repair.get_status_display }}</span>
+                                <span class="badge-pill text-white {% if repair.status == 'COMPLETED' %}bg-success{% elif repair.status == 'ON_PROCESS' %}bg-info{% else %}bg-warning{% endif %}">{{ repair.get_status_display }}</span>
                             </td>
                             <td>{{ repair.created_at|date:"d M Y" }}</td>
                             <td>
