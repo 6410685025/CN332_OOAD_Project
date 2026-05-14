@@ -203,6 +203,22 @@ def edit_announcement_view(request, pk):
 
 @login_required
 @require_http_methods(["DELETE"])
+def delete_announcement_view(request, pk):
+    if not request.user.is_staff_member:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+
+    announcement = get_object_or_404(Announcement, pk=pk)
+
+    for attachment in announcement.attachments.all():
+        attachment.file.delete(save=False)
+
+    announcement.delete()
+
+    return JsonResponse({'success': True, 'message': 'Announcement deleted'})
+
+
+@login_required
+@require_http_methods(["DELETE"])
 def delete_attachment_view(request, pk):
     if not request.user.is_staff_member:
         return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
