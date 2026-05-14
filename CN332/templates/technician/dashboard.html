@@ -2,92 +2,298 @@
 
 {% block page_title %}Technician Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Styling ให้คล้ายคลึงกับภาพต้นแบบ */
+    .status-card {
+        border-radius: 12px;
+        border: 1px solid #eaeaea;
+        background-color: #fff;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+        cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #20c997;
+        border-color: #20c997;
+    }
+    
+    /* Stats Cards */
+    .stat-box {
+        border-radius: 12px;
+        border: 1px solid #eaeaea;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+    }
+    .stat-box .icon-container {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .stat-box.orange .icon-container { background-color: #fff3e0; color: #ff9800; }
+    .stat-box.orange .stat-num { color: #ff9800; }
+    
+    .stat-box.blue .icon-container { background-color: #e3f2fd; color: #2196f3; }
+    .stat-box.blue .stat-num { color: #2196f3; }
+    
+    .stat-box.green .icon-container { background-color: #e8f5e9; color: #4caf50; }
+    .stat-box.green .stat-num { color: #4caf50; }
+
+    .stat-num {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0;
+        line-height: 1;
+    }
+    .stat-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+    }
+    .stat-subtitle {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+
+    /* Job List Cards */
+    .job-list-container {
+        background-color: #f8f9fa;
+        border-radius: 16px;
+        padding: 24px;
+        margin-top: 24px;
+    }
+    .job-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .job-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .job-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f1f3f5;
+        font-size: 1.2rem;
+        margin-right: 15px;
+    }
+    .badge-soft-warning { background-color: #fff3cd; color: #856404; font-weight: 600; padding: 6px 12px; border-radius: 20px;}
+    .badge-soft-info { background-color: #cce5ff; color: #004085; font-weight: 600; padding: 6px 12px; border-radius: 20px;}
+    .badge-soft-success { background-color: #d4edda; color: #155724; font-weight: 600; padding: 6px 12px; border-radius: 20px;}
+    
+    .job-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .btn-action-main {
+        flex-grow: 1;
+        font-weight: 600;
+        border-radius: 8px;
+    }
+    .btn-action-outline {
+        border: 1px solid #ced4da;
+        color: #495057;
+        background: white;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 8px 20px;
+    }
+    .btn-action-outline:hover {
+        background: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Stats Row -->
-<div class="row mb-4">
+<h2 class="mb-4 fw-bold">Dashboard</h2>
+
+<div class="status-card d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <div class="icon-container me-3" style="width: 40px; height: 40px; border-radius: 50%; background-color: #e8f5e9; color: #4caf50; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div>
+            <h6 class="mb-0 fw-bold">Availability Status</h6>
+            <small class="text-muted" id="availabilityText">
+                {% if technician.availability == 'AVAILABLE' %}
+                    Currently accepting repair requests
+                {% else %}
+                    Currently busy or off duty
+                {% endif %}
+            </small>
+        </div>
+    </div>
+    <div class="form-check form-switch fs-4 mb-0">
+        <input class="form-check-input" type="checkbox" id="availabilityToggle" 
+               {% if technician.availability == 'AVAILABLE' %}checked{% endif %}>
+    </div>
+</div>
+
+<div class="row mb-4 g-3">
     <div class="col-md-4">
-        <div class="stat-card purple">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-value">{{ assigned_jobs|default:0 }}</div>
-                    <div class="stat-label">Assigned Jobs</div>
+        <div class="stat-box orange">
+            <div>
+                <div class="icon-container mb-2">
+                    <i class="bi bi-clipboard-data"></i>
                 </div>
-                <i class="bi bi-tools stat-icon"></i>
+                <div class="stat-title">Assigned Tasks</div>
+                <p class="stat-subtitle">Pending your action</p>
             </div>
+            <div class="stat-num">{{ assigned_jobs|default:0 }}</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="stat-card blue">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-value">{{ in_progress|default:0 }}</div>
-                    <div class="stat-label">In Progress</div>
+        <div class="stat-box blue">
+            <div>
+                <div class="icon-container mb-2">
+                    <i class="bi bi-tools"></i>
                 </div>
-                <i class="bi bi-hourglass-split stat-icon"></i>
+                <div class="stat-title">In Progress</div>
+                <p class="stat-subtitle">Active repairs today</p>
             </div>
+            <div class="stat-num">{{ in_progress|default:0 }}</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="stat-card green">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <div class="stat-value">{{ completed_jobs|default:0 }}</div>
-                    <div class="stat-label">Completed This Month</div>
+        <div class="stat-box green">
+            <div>
+                <div class="icon-container mb-2">
+                    <i class="bi bi-check-circle"></i>
                 </div>
-                <i class="bi bi-check-circle stat-icon"></i>
+                <div class="stat-title">Completed</div>
+                <p class="stat-subtitle">Great work!</p>
             </div>
+            <div class="stat-num">{{ completed_jobs|default:0 }}</div>
         </div>
     </div>
 </div>
 
-<!-- Assigned Jobs -->
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-clipboard-check me-2"></i>My Assigned Jobs</span>
-                <a href="{% url 'repair_list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+<div class="job-list-container">
+    <h4 class="fw-bold mb-4">My Repair Jobs</h4>
+    
+    {% for repair in repairs %}
+    <div class="job-card">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex align-items-start">
+                <div class="job-icon">
+                    {% if 'Plumbing' in repair.description or 'Water' in repair.description %}
+                        <i class="bi bi-droplet text-warning"></i>
+                    {% elif 'Electric' in repair.description or 'Light' in repair.description %}
+                        <i class="bi bi-lightning-charge text-primary"></i>
+                    {% elif 'Air' in repair.description or 'HVAC' in repair.description %}
+                        <i class="bi bi-snow text-info"></i>
+                    {% else %}
+                        <i class="bi bi-door-open text-secondary"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">REP-{{ repair.id }} <span class="text-muted fw-normal ms-2">{{ repair.get_request_type_display }}</span></h6>
+                    <small class="text-muted d-block mb-2">
+                        <i class="bi bi-geo-alt-fill me-1"></i> {{ repair.location }} 
+                        <span class="mx-1">•</span> 
+                        <i class="bi bi-clock me-1"></i> Requested: {{ repair.created_at|timesince }} ago
+                    </small>
+                    <p class="mb-0 text-dark" style="font-size: 0.9rem;">Issue: {{ repair.description }}</p>
+                </div>
             </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Location</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for repair in repairs %}
-                        <tr>
-                            <td>#{{ repair.id }}</td>
-                            <td>{{ repair.location }}</td>
-                            <td>{{ repair.description|truncatechars:40 }}</td>
-                            <td>
-                                <span class="badge-pill text-white {% if repair.status == 'COMPLETED' %}bg-success{% elif repair.status == 'ON_PROCESS' %}bg-info{% else %}bg-warning{% endif %}">{{ repair.get_status_display }}</span>
-                            </td>
-                            <td>{{ repair.created_at|date:"d M Y" }}</td>
-                            <td>
-                                {% if repair.status != 'COMPLETED' %}
-                                <a href="{% url 'update_repair_status' repair.pk %}"
-                                    class="btn btn-sm btn-info">Update</a>
-                                {% else %}
-                                <span class="text-muted">Done</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No assigned jobs</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            
+            <div>
+                {% if repair.status == 'PENDING' %}
+                    <span class="badge-soft-warning"><i class="bi bi-clock me-1"></i> Pending</span>
+                {% elif repair.status == 'ON_PROCESS' %}
+                    <span class="badge-soft-info"><i class="bi bi-gear-wide-connected me-1"></i> On Process</span>
+                {% elif repair.status == 'COMPLETED' %}
+                    <span class="badge-soft-success"><i class="bi bi-check-circle me-1"></i> Completed</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ repair.get_status_display }}</span>
+                {% endif %}
             </div>
         </div>
+
+        <div class="job-actions">
+            {% if repair.status == 'PENDING' %}
+                <a href="{% url 'update_repair_status' repair.pk %}" class="btn btn-primary btn-action-main" style="background-color: #254baf; border: none;">View Task</a>
+            {% elif repair.status == 'ON_PROCESS' %}
+                <a href="{% url 'update_repair_status' repair.pk %}" class="btn btn-success btn-action-main" style="background-color: #20c997; border: none;">Mark Complete</a>
+            {% elif repair.status == 'COMPLETED' %}
+                <button class="btn btn-secondary btn-action-main" disabled>Task Completed</button>
+            {% endif %}
+            <a href="{% url 'repair_detail' repair.pk %}" class="btn btn-action-outline">View Details</a>
+        </div>
     </div>
+    {% empty %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+        <h5>No Assigned Jobs</h5>
+        <p>You currently have no tasks assigned to you.</p>
+    </div>
+    {% endfor %}
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // จัดการระบบเปิด-ปิดสถานะรับงานด้วย AJAX
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggleBtn = document.getElementById('availabilityToggle');
+        const statusText = document.getElementById('availabilityText');
+
+        toggleBtn.addEventListener('change', function() {
+            const isAvailable = this.checked;
+            
+            // เปลี่ยน Text ทันทีเพื่อความลื่นไหล
+            statusText.textContent = isAvailable ? 'Currently accepting repair requests' : 'Currently busy or off duty';
+
+            // ส่งข้อมูลไปที่ Backend
+            fetch("{% url 'toggle_technician_availability' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    is_available: isAvailable
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(!data.success) {
+                    alert("Error updating status: " + data.error);
+                    // Revert UI if error
+                    toggleBtn.checked = !isAvailable;
+                    statusText.textContent = !isAvailable ? 'Currently accepting repair requests' : 'Currently busy or off duty';
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to communicate with server.");
+                toggleBtn.checked = !isAvailable;
+            });
+        });
+    });
+</script>
 {% endblock %}

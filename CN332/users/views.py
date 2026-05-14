@@ -96,6 +96,7 @@ def technician_dashboard(request):
     repairs = RepairRequest.objects.filter(technician=technician).order_by('-created_at')
     
     context = {
+        'technician': technician, # เพิ่มบรรทัดนี้เพื่อส่งข้อมูลช่างไปเช็กสถานะ
         'assigned_jobs': repairs.exclude(status='COMPLETED').count(),
         'in_progress': repairs.filter(status='ON_PROCESS').count(),
         'completed_jobs': repairs.filter(status='COMPLETED').count(),
@@ -459,3 +460,21 @@ def change_password_view(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
     else:
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_technician_availability(request):
+    if not request.user.is_technician:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        is_available = data.get('is_available', True)
+        
+        technician = request.user.technician
+        technician.availability = 'AVAILABLE' if is_available else 'BUSY'
+        technician.save()
+        
+        return JsonResponse({'success': True, 'status': technician.availability})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)

@@ -9,6 +9,7 @@ urlpatterns = [
     path('resident/', views.resident_dashboard, name='resident_dashboard'),
     path('staff/', views.staff_dashboard, name='staff_dashboard'),
     path('technician/', views.technician_dashboard, name='technician_dashboard'),
+    path('technician/toggle-availability/', views.toggle_technician_availability, name='toggle_technician_availability'),
     path('residents/', views.residents_list_view, name='residents_list'),
     path('residents/create/', views.create_resident_view, name='create_resident'),
     path('residents/<int:resident_id>/get/', views.get_resident_view, name='get_resident'),
