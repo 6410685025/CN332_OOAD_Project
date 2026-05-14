@@ -337,19 +337,20 @@
 {% block content %}
 <div class="d-flex gap-2 mb-3 align-items-center">
   <form method="get" class="d-flex flex-grow-1 gap-2" role="search">
-    <div class="input-group search-input-group flex-grow-1" style="max-width: 400px;">
+    
+    <div class="input-group search-input-group flex-grow-1" style="max-width: 450px;">
       <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
-      <input type="search" name="q" class="form-control" placeholder="Search by ID, location, or type..." value="{{ q }}">
+      <input type="search" name="q" id="searchInput" class="form-control" placeholder="Search by ID, location, or type..." value="{{ q }}">
     </div>
-    <select name="status" class="form-select" style="max-width: 220px;">
+
+    <select name="status" class="form-select" style="max-width: 220px;" onchange="this.form.submit()">
       {% for status_value, status_label in status_filters %}
       <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>{{ status_label }}</option>
       {% endfor %}
     </select>
-    <button type="submit" class="btn btn-outline-secondary">
-      <i class="bi bi-funnel me-1"></i>Filter
-    </button>
+
   </form>
+  
   {% if user.is_resident or user.is_staff_member %}
   <a href="{% url 'create_repair' %}" class="btn btn-new-request">
     <i class="bi bi-plus-lg me-2"></i>New Request
@@ -444,4 +445,39 @@
   });
 </script>
 {% endblock %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. โค้ดเดิม: ทำให้คลิกแถวแล้วไปหน้า Detail
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function () {
+        const href = this.dataset.href;
+        if (href) window.location.href = href;
+      });
+    });
+
+    // 2. โค้ดที่เพิ่มใหม่: ระบบพิมพ์แล้วค้นหาอัตโนมัติ (Debounce)
+    const searchInput = document.getElementById('searchInput');
+    let typingTimer;
+    const doneTypingInterval = 600; // หน่วงเวลา 0.6 วินาทีหลังจากหยุดพิมพ์ ค่อย submit
+
+    if (searchInput) {
+      // ทำให้ Cursor กลับมาอยู่ที่เดิมตอนรีเฟรชหน้าเว็บเสร็จ
+      const strLength = searchInput.value.length;
+      if (strLength > 0) {
+        searchInput.focus();
+        searchInput.setSelectionRange(strLength, strLength);
+      }
+
+      // ตรวจจับการพิมพ์
+      searchInput.addEventListener('input', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function() {
+          searchInput.closest('form').submit();
+        }, doneTypingInterval);
+      });
+    }
+  });
+</script>
 
