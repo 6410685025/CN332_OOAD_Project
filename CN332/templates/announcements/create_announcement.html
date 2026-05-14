@@ -124,6 +124,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const fileInput = document.getElementById('fileInput');
   const uploadedFiles = document.getElementById('uploadedFiles');
 
+  // ใช้ Array เก็บไฟล์เพื่อป้องกันไฟล์ซ้ำซ้อน
+  let selectedFiles = []; 
+
   // Click to upload
   fileUploadArea.addEventListener('click', () => fileInput.click());
 
@@ -148,16 +151,22 @@ document.addEventListener('DOMContentLoaded', function() {
     handleFiles(e.target.files);
   });
 
-  function handleFiles(files) {
+  function handleFiles(newFiles) {
+    // เอาไฟล์ที่เพิ่งเพิ่มเข้ามา เช็กว่าซ้ำไหม ถ้าไม่ซ้ำให้ push เข้า Array
+    for (let file of newFiles) {
+      const isDuplicate = selectedFiles.some(f => f.name === file.name && f.size === file.size);
+      if (!isDuplicate) {
+        selectedFiles.push(file);
+      }
+    }
+    updateFileInputAndDisplay();
+  }
+
+  function updateFileInputAndDisplay() {
     const dataTransfer = new DataTransfer();
     
-    // Add existing files
-    for (let file of fileInput.files) {
-      dataTransfer.items.add(file);
-    }
-    
-    // Add new files
-    for (let file of files) {
+    // อัปเดตไฟล์ทั้งหมดกลับเข้าไปใน Input เพื่อเตรียม Submit
+    for (let file of selectedFiles) {
       dataTransfer.items.add(file);
     }
     
@@ -168,56 +177,73 @@ document.addEventListener('DOMContentLoaded', function() {
   function displayFiles() {
     uploadedFiles.innerHTML = '';
     
-    if (fileInput.files.length === 0) {
-      return;
-    }
-
-    for (let file of fileInput.files) {
+    // สร้าง Grid รองรับกรณีอัปโหลดรูปภาพหลายรูป
+    uploadedFiles.style.display = 'grid';
+    uploadedFiles.style.gap = '16px';
+    
+    selectedFiles.forEach((file, index) => {
       const fileItem = document.createElement('div');
-      fileItem.className = 'file-item';
-      
-      const icon = getFileIcon(file.name);
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      
-      fileItem.innerHTML = `
-        <div class="file-item-name">
-          <i class="bi ${icon}" style="font-size: 1.2rem;"></i>
-          <span>${file.name} (${sizeMB}MB)</span>
-        </div>
-        <button type="button" class="file-remove-btn" onclick="removeFile('${file.name}')">Remove</button>
-      `;
+
+      // เช็กว่าเป็นไฟล์รูปภาพหรือไม่
+      if (file.type.startsWith('image/')) {
+        const imgUrl = URL.createObjectURL(file);
+        fileItem.style.cssText = 'border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
+        
+        fileItem.innerHTML = `
+          <div style="position: relative; width: 100%; height: 200px; background: #f3f4f6;">
+              <img src="${imgUrl}" alt="preview" style="width: 100%; height: 100%; object-fit: contain;">
+              
+              <button type="button" onclick="removeFile(${index})" style="position: absolute; top: 10px; right: 10px; border: none; background: rgba(220, 38, 38, 0.9); color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">
+                  <i class="bi bi-x-lg"></i>
+              </button>
+          </div>
+          
+          <div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-weight: 600; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75%;">${file.name}</div>
+              <div style="font-size: 0.85rem; color: #6b7280; font-weight: 500;">${sizeMB} MB</div>
+          </div>
+        `;
+      } else {
+        // ถ้าเป็นไฟล์เอกสาร (PDF, Word, Excel) ให้แสดงเป็นแถบแนวนอนเหมือนเดิม
+        fileItem.className = 'file-item';
+        fileItem.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: #f3f4f6; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;';
+        
+        const icon = getFileIcon(file.name);
+        fileItem.innerHTML = `
+          <div class="file-item-name" style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: #e5e7eb; border-radius: 6px;">
+                <i class="bi ${icon}" style="font-size: 1.5rem; color: #4b5563;"></i>
+            </div>
+            <div>
+               <div style="font-weight: 600; color: #374151;">${file.name}</div>
+               <div style="font-size: 0.85rem; color: #6b7280; font-weight: 500;">${sizeMB} MB</div>
+            </div>
+          </div>
+          <button type="button" class="file-remove-btn" onclick="removeFile(${index})" style="background: none; border: none; color: #dc2626; font-weight: 600; cursor: pointer;">Remove</button>
+        `;
+      }
       
       uploadedFiles.appendChild(fileItem);
-    }
+    });
   }
 
   function getFileIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     switch(ext) {
-      case 'pdf': return 'bi-file-pdf';
+      case 'pdf': return 'bi-file-pdf text-danger';
       case 'doc':
-      case 'docx': return 'bi-file-word';
+      case 'docx': return 'bi-file-word text-primary';
       case 'xls':
-      case 'xlsx': return 'bi-file-earmark-spreadsheet';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'gif': return 'bi-image';
-      default: return 'bi-file';
+      case 'xlsx': return 'bi-file-earmark-spreadsheet text-success';
+      default: return 'bi-file-earmark-text';
     }
   }
 
-  window.removeFile = function(filename) {
-    const dataTransfer = new DataTransfer();
-    
-    for (let file of fileInput.files) {
-      if (file.name !== filename) {
-        dataTransfer.items.add(file);
-      }
-    }
-    
-    fileInput.files = dataTransfer.files;
-    displayFiles();
+  // ฟังก์ชันลบไฟล์
+  window.removeFile = function(index) {
+    selectedFiles.splice(index, 1);
+    updateFileInputAndDisplay();
   };
 });
 </script>

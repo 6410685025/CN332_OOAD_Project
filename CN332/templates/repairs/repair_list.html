@@ -435,19 +435,6 @@
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.clickable-row').forEach(function (row) {
-      row.style.cursor = 'pointer';
-      row.addEventListener('click', function () {
-        const href = this.dataset.href;
-        if (href) window.location.href = href;
-      });
-    });
-  });
-</script>
-{% endblock %}
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
     // 1. โค้ดเดิม: ทำให้คลิกแถวแล้วไปหน้า Detail
     document.querySelectorAll('.clickable-row').forEach(function (row) {
       row.style.cursor = 'pointer';
@@ -480,4 +467,7 @@
     }
   });
 </script>
+{% endblock %}
+
+
 
