@@ -154,6 +154,16 @@ class LostFoundStaffViewTest(LostFoundSetup):
         self.assertEqual(self.approved_item.status, 'RESOLVED')
         self.assertEqual(self.approved_item.resolver, self.staff_profile)
 
+    def test_resolved_item_hides_mark_resolved_button(self):
+        """ทดสอบว่า item ที่ resolved แล้วไม่แสดงปุ่ม Mark Resolved"""
+        self.approved_item.status = 'RESOLVED'
+        self.approved_item.save()
+
+        response = self.client.get(reverse('lost_found_list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Resolved')
+        self.assertNotContains(response, 'Mark Resolved')
+
     def test_staff_access_resident_views(self):
         """ทดสอบ Staff แอบเข้าหน้าทำรายการของลูกบ้าน (ต้องโดนเด้งกลับ)"""
         self.assertRedirects(self.client.get(reverse('report_item')), reverse('dashboard'), fetch_redirect_response=False)

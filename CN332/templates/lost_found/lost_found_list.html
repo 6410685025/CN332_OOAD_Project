@@ -914,17 +914,17 @@
           </td>
           <td>
             <div class="action-btns">
-              {% if not item.is_approved %}
-              <a href="{% url 'approve_item' item.pk %}" class="action-btn btn-review">Approve</a>
-              {% elif item.item_type == 'FOUND' %}
-              <a href="{% url 'resolve_item' item.pk %}" class="action-btn btn-resolve">Mark Resolved</a>
-              {% elif item.status == 'CLAIMED' %}
-              <a href="{% url 'resolve_item' item.pk %}" class="action-btn btn-resolve">Mark Resolved</a>
-              {% elif item.status == 'PENDING' %}
-              <button class="action-btn btn-review" disabled style="opacity: 0.5; cursor: not-allowed;">Waiting for Claim</button>
-              {% else %}
-              <button class="action-btn btn-review" disabled style="opacity: 0.5; cursor: not-allowed;">Resolved</button>
-              {% endif %}
+                            {% if item.status == 'RESOLVED' %}
+                            <button class="action-btn btn-review" disabled style="opacity: 0.5; cursor: not-allowed;">Resolved</button>
+                            {% elif not item.is_approved %}
+                            <a href="{% url 'approve_item' item.pk %}" class="action-btn btn-review">Approve</a>
+                            {% elif item.item_type == 'FOUND' or item.status == 'CLAIMED' %}
+                            <a href="{% url 'resolve_item' item.pk %}" class="action-btn btn-resolve">Mark Resolved</a>
+                            {% elif item.status == 'PENDING' %}
+                            <button class="action-btn btn-review" disabled style="opacity: 0.5; cursor: not-allowed;">Waiting for Claim</button>
+                            {% else %}
+                            <button class="action-btn btn-review" disabled style="opacity: 0.5; cursor: not-allowed;">Resolved</button>
+                            {% endif %}
             </div>
           </td>
         </tr>
