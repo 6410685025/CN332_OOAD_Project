@@ -74,6 +74,19 @@ def resident_dashboard(request):
 @login_required
 def staff_dashboard(request):
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    selected_repair_status = request.GET.get('status', '').strip().upper()
+    allowed_repair_statuses = {choice[0] for choice in RepairRequest.STATUS_CHOICES}
+    repair_status_filters = [('ALL', 'All Status')] + list(RepairRequest.STATUS_CHOICES)
+
+    repairs_queryset = RepairRequest.objects.select_related('resident', 'technician').order_by('-created_at')
+    if selected_repair_status in allowed_repair_statuses:
+        filtered_repairs_queryset = repairs_queryset.filter(status=selected_repair_status)
+    else:
+        selected_repair_status = 'ALL'
+        filtered_repairs_queryset = repairs_queryset
+
+    selected_repair_status_label = dict(repair_status_filters).get(selected_repair_status, 'All Status')
+
     context = {
         'pending_repairs': RepairRequest.objects.filter(status='PENDING').count(),
         'pending_packages': Package.objects.filter(status='RECEIVED').count(),
@@ -81,9 +94,13 @@ def staff_dashboard(request):
         'pending_lost_found': LostFound.objects.filter(status='PENDING').count(),
         'active_announcements': Announcement.objects.count(),
         'total_repairs': RepairRequest.objects.count(),
+        'filtered_repairs_total': filtered_repairs_queryset.count(),
         'recent_repairs_today': RepairRequest.objects.filter(created_at__gte=today_start).count(),
         'packages_today': Package.objects.filter(status='RECEIVED', arrived_at__gte=today_start).count(),
-        'recent_repairs': RepairRequest.objects.select_related('resident', 'technician').order_by('-created_at')[:5],
+        'recent_repairs': filtered_repairs_queryset[:5],
+        'selected_repair_status': selected_repair_status,
+        'selected_repair_status_label': selected_repair_status_label,
+        'repair_status_filters': repair_status_filters,
         'recent_packages': Package.objects.filter(status='RECEIVED').select_related('resident').order_by('-arrived_at')[:4],
     }
     return render(request, 'staff/dashboard.html', context)

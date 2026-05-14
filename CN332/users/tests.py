@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.messages.storage.fallback import FallbackStorage
 
 from .models import Resident, Staff, Technician
+from repairs.models import RepairRequest
 from .forms import ResidentCreationForm
 from .services.line_messaging import _push_line_message, send_line_text_message, send_line_flex_message
 from .adapters import NoNewSocialSignupAdapter
@@ -113,6 +114,42 @@ class AuthAndDashboardTest(UserSetup):
 
         self.client.force_login(self.tech_user)
         self.assertEqual(self.client.get(reverse('technician_dashboard')).status_code, 200)
+
+    def test_staff_dashboard_filters_repairs_by_status(self):
+        RepairRequest.objects.create(
+            resident=self.resident,
+            request_type='MAINTENANCE',
+            description='Pending repair',
+            location='A1',
+            status='PENDING'
+        )
+        RepairRequest.objects.create(
+            resident=self.resident,
+            request_type='MAINTENANCE',
+            description='In progress repair',
+            location='A2',
+            status='ON_PROCESS'
+        )
+        RepairRequest.objects.create(
+            resident=self.resident,
+            request_type='MAINTENANCE',
+            description='Completed repair',
+            location='A3',
+            status='COMPLETED'
+        )
+
+        self.client.force_login(self.staff_user)
+
+        completed_response = self.client.get(reverse('staff_dashboard'), {'status': 'COMPLETED'})
+        self.assertEqual(completed_response.status_code, 200)
+        self.assertEqual(completed_response.context['selected_repair_status'], 'COMPLETED')
+        self.assertEqual(completed_response.context['filtered_repairs_total'], 1)
+        self.assertTrue(all(r.status == 'COMPLETED' for r in completed_response.context['recent_repairs']))
+
+        invalid_response = self.client.get(reverse('staff_dashboard'), {'status': 'INVALID'})
+        self.assertEqual(invalid_response.status_code, 200)
+        self.assertEqual(invalid_response.context['selected_repair_status'], 'ALL')
+        self.assertEqual(invalid_response.context['filtered_repairs_total'], 3)
 
 class ResidentCRUDTest(UserSetup):
     def setUp(self):

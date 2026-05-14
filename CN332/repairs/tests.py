@@ -80,6 +80,18 @@ class RepairResidentViewTest(RepairSetup):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Leaking pipe')
 
+    def test_repair_list_resident_filter_status(self):
+        """ทดสอบลูกบ้านกรองรายการตามสถานะ"""
+        self.client.force_login(self.res_user)
+        self.repair_comp.status = 'COMPLETED'
+        self.repair_comp.save()
+
+        response = self.client.get(reverse('repair_list'), {'status': 'COMPLETED'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['selected_status'], 'COMPLETED')
+        self.assertContains(response, 'Noisy neighbors')
+        self.assertNotContains(response, 'Leaking pipe')
+
     def test_create_repair_with_image(self):
         """ทดสอบลูกบ้านสร้างรายการแจ้งซ่อมพร้อมแนบรูป"""
         self.client.force_login(self.res_user)
@@ -118,6 +130,22 @@ class RepairStaffViewTest(RepairSetup):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Leaking pipe')
         self.assertContains(response, 'Noisy neighbors')
+
+    def test_repair_list_staff_filter_status(self):
+        """ทดสอบนิติบุคคลกรองรายการตามสถานะ"""
+        self.client.force_login(self.staff_user)
+        self.repair_comp.status = 'COMPLETED'
+        self.repair_comp.save()
+
+        response = self.client.get(reverse('repair_list'), {'status': 'COMPLETED'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['selected_status'], 'COMPLETED')
+        self.assertContains(response, 'Noisy neighbors')
+        self.assertNotContains(response, 'Leaking pipe')
+
+        invalid_response = self.client.get(reverse('repair_list'), {'status': 'INVALID'})
+        self.assertEqual(invalid_response.status_code, 200)
+        self.assertEqual(invalid_response.context['selected_status'], 'ALL')
 
     def test_assign_technician(self):
         """ทดสอบนิติบุคคลจ่ายงานให้ช่าง (MAINTENANCE)"""
