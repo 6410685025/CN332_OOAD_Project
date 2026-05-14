@@ -53,13 +53,19 @@
             gap: 8px;
         }
 
-        /* Sidebar toggle button - hidden on desktop */
+        /* Sidebar toggle button */
         #sidebarToggle {
-            display: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
             border: none;
             background: transparent;
             color: var(--text-primary);
             font-size: 1.25rem;
+            border-radius: 8px;
         }
 
         #sidebarToggle:hover {
@@ -131,12 +137,6 @@
         /* Tablet and smaller screens */
         @media (max-width: 992px) {
             #sidebarToggle {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 40px;
-                height: 40px;
-                padding: 0;
                 border-radius: 6px;
             }
 
@@ -390,6 +390,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarToggleIcon = sidebarToggle ? sidebarToggle.querySelector('i') : null;
     let backdrop = document.querySelector('.sidebar-backdrop');
 
     // Create backdrop if it doesn't exist
@@ -399,14 +400,41 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(backdrop);
     }
 
-    // Toggle sidebar on mobile
+    function isMobileView() {
+        return window.innerWidth <= 992;
+    }
+
+    function syncToggleButton() {
+        if (!sidebarToggle) {
+            return;
+        }
+
+        if (isMobileView()) {
+            sidebarToggle.setAttribute('aria-label', sidebar.classList.contains('open') ? 'Close menu' : 'Open menu');
+            if (sidebarToggleIcon) {
+                sidebarToggleIcon.className = sidebar.classList.contains('open') ? 'bi bi-x-lg' : 'bi bi-list';
+            }
+        } else {
+            sidebarToggle.setAttribute('aria-label', sidebar.classList.contains('collapsed') ? 'Expand sidebar' : 'Collapse sidebar');
+            if (sidebarToggleIcon) {
+                sidebarToggleIcon.className = sidebar.classList.contains('collapsed') ? 'bi bi-layout-sidebar-inset' : 'bi bi-layout-sidebar';
+            }
+        }
+    }
+
+    // Toggle sidebar on desktop and mobile
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function () {
-            const isOpen = sidebar.classList.contains('open');
-            if (isOpen) {
-                closeSidebar();
+            if (isMobileView()) {
+                const isOpen = sidebar.classList.contains('open');
+                if (isOpen) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
             } else {
-                openSidebar();
+                sidebar.classList.toggle('collapsed');
+                syncToggleButton();
             }
         });
     }
@@ -429,18 +457,23 @@ document.addEventListener('DOMContentLoaded', function () {
         sidebar.classList.add('open');
         backdrop.classList.add('show');
         document.body.classList.add('sidebar-open');
+        syncToggleButton();
     }
 
     function closeSidebar() {
         sidebar.classList.remove('open');
         backdrop.classList.remove('show');
         document.body.classList.remove('sidebar-open');
+        syncToggleButton();
     }
 
     // Close sidebar on window resize to desktop
     window.addEventListener('resize', function () {
-        if (window.innerWidth > 992) {
+        if (!isMobileView()) {
             closeSidebar();
+        } else {
+            sidebar.classList.remove('collapsed');
+            syncToggleButton();
         }
     });
 
@@ -450,6 +483,8 @@ document.addEventListener('DOMContentLoaded', function () {
             closeSidebar();
         }
     });
+
+    syncToggleButton();
 });
 </script>
 
