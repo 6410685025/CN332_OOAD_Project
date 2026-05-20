@@ -163,13 +163,32 @@
     color: #94a3b8;
     font-family: 'Courier New', monospace;
   }
+
+  .package-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .package-item-main {
+    min-width: 0;
+    flex: 1;
+  }
   
   .package-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 8px 16px;
     border-radius: 999px;
     font-weight: 500;
     font-size: 0.85rem;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.2;
+    text-align: center;
+    max-width: 100%;
     flex-shrink: 0;
   }
   
@@ -207,17 +226,28 @@
     color: #10b981;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
+    .package-item-row {
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .package-badge {
+      font-size: 0.78rem;
+      padding: 6px 10px;
+    }
+
     .dashboard-welcome-card {
-      padding: 20px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
     }
 
     .dashboard-welcome-card h2 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
     }
 
     .dashboard-stats-row {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
     }
 
@@ -225,8 +255,256 @@
       padding: 18px;
     }
 
+    .dashboard-stat-card i {
+      font-size: 1.75rem;
+      margin-bottom: 10px;
+    }
+
     .dashboard-stat-card .stat-number {
       font-size: 2rem;
+    }
+
+    .dashboard-stat-card .stat-label {
+      font-size: 0.8rem;
+    }
+
+    .dashboard-card-body {
+      padding: 12px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .package-item-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .package-badge {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .dashboard-welcome-card {
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .dashboard-welcome-card h2 {
+      font-size: 1.3rem;
+    }
+
+    .dashboard-welcome-card p {
+      font-size: 0.85rem;
+      margin: 6px 0 12px 0;
+    }
+
+    .dashboard-stats-row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .dashboard-stat-card {
+      padding: 14px;
+    }
+
+    .dashboard-stat-card i {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .dashboard-stat-card .stat-number {
+      font-size: 1.75rem;
+    }
+
+    .dashboard-stat-card .stat-label {
+      font-size: 0.75rem;
+      margin-top: 6px;
+    }
+
+    .dashboard-card {
+      margin-bottom: 12px;
+    }
+
+    .dashboard-card-header {
+      padding: 12px 14px;
+      font-size: 0.95rem;
+    }
+
+    .dashboard-card-body {
+      padding: 10px;
+    }
+
+    .announcement-title {
+      font-size: 0.95rem;
+    }
+
+    .announcement-content {
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .announcement-author {
+      font-size: 0.75rem;
+      gap: 2px;
+    }
+
+    .announcement-date {
+      font-size: 0.75rem;
+    }
+
+    .package-sender {
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .package-info {
+      font-size: 0.8rem;
+      margin-bottom: 2px;
+    }
+
+    .package-badge {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .booking-name {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .booking-date, .booking-time {
+      font-size: 0.75rem;
+      gap: 3px;
+      margin-bottom: 2px;
+    }
+
+    .booking-icon i {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .dashboard-welcome-card {
+      padding: 12px;
+      margin: 0 -10px 12px -10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .dashboard-welcome-card h2 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+    }
+
+    .dashboard-welcome-card p {
+      font-size: 0.8rem;
+      margin: 4px 0 8px 0;
+    }
+
+    .dashboard-stats-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .dashboard-stat-card {
+      padding: 10px;
+    }
+
+    .dashboard-stat-card i {
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+    }
+
+    .dashboard-stat-card .stat-number {
+      font-size: 1.5rem;
+    }
+
+    .dashboard-stat-card .stat-label {
+      font-size: 0.7rem;
+      margin-top: 4px;
+    }
+
+    .dashboard-card {
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+
+    .dashboard-card-header {
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .dashboard-card-body {
+      padding: 8px;
+    }
+
+    .dashboard-item-card {
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-left-width: 2px;
+    }
+
+    .announcement-title {
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+    }
+
+    .announcement-content {
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .announcement-author {
+      font-size: 0.7rem;
+    }
+
+    .announcement-date {
+      font-size: 0.7rem;
+    }
+
+    .package-sender {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .package-info {
+      font-size: 0.75rem;
+      margin-bottom: 2px;
+    }
+
+    .package-id {
+      font-size: 0.75rem;
+    }
+
+    .package-badge {
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      width: 100%;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .booking-icon {
+      padding-top: 1px;
+    }
+
+    .booking-icon i {
+      font-size: 0.95rem;
+    }
+
+    .booking-name {
+      font-size: 0.85rem;
+      margin-bottom: 3px;
+    }
+
+    .booking-date, .booking-time {
+      font-size: 0.7rem;
+      gap: 2px;
+      margin-bottom: 1px;
     }
   }
   
@@ -327,8 +605,8 @@
       <div class="card-header dashboard-card-header">Package Tracking</div>
       <div class="card-body dashboard-card-body">
         {% for pkg in resident_packages %}
-        <div class="dashboard-item-card {% if pkg.status == 'RECEIVED' %}green{% else %}gray{% endif %} d-flex justify-content-between align-items-center gap-3">
-          <div>
+        <div class="dashboard-item-card {% if pkg.status == 'RECEIVED' %}green{% else %}gray{% endif %} package-item-row">
+          <div class="package-item-main">
             <strong class="package-sender">{{ pkg.sender }}</strong>
             <div class="package-info">
               {% if pkg.status == 'PICKED_UP' %}Picked up on {{ pkg.picked_up_at|date:"M d, Y" }}{% else %}Arrived on {{ pkg.arrived_at|date:"M d, Y" }} at {{ pkg.arrived_at|time:"g:i A" }}{% endif %}

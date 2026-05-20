@@ -136,7 +136,13 @@
                         </td>
                         <td>
                             <span class="d-flex align-items-center gap-2">
-                                <span class="user-avatar" style="width:28px;height:28px;font-size:0.75rem;">{{ b.resident.user.username|slice:":1"|upper }}</span>
+                                <span class="user-avatar avatar-sm">
+                                    {% if b.resident.user.profile_photo %}
+                                        <img src="{{ b.resident.user.profile_photo.url }}" alt="{{ b.resident.user.get_full_name|default:b.resident.user.username }}" class="avatar-img">
+                                    {% else %}
+                                        {{ b.resident.user.username|slice:":1"|upper }}
+                                    {% endif %}
+                                </span>
                                 Room {{ b.resident.room_number }}
                             </span>
                         </td>

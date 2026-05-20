@@ -340,7 +340,22 @@
           <small>Manage maintenance and complaint tickets</small>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-outline-secondary btn-sm" type="button"><i class="bi bi-funnel me-1"></i>Filter</button>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-funnel me-1"></i>{{ selected_repair_status_label }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% for status_value, status_label in repair_status_filters %}
+              <li>
+                {% if status_value == 'ALL' %}
+                <a class="dropdown-item {% if selected_repair_status == status_value %}active{% endif %}" href="{% url 'staff_dashboard' %}">{{ status_label }}</a>
+                {% else %}
+                <a class="dropdown-item {% if selected_repair_status == status_value %}active{% endif %}" href="{% url 'staff_dashboard' %}?status={{ status_value }}">{{ status_label }}</a>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
           <a href="{% url 'repair_list' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus me-1"></i>New Request</a>
         </div>
       </div>
@@ -381,13 +396,13 @@
               </td>
             </tr>
             {% empty %}
-            <tr><td colspan="5" class="text-center text-muted py-4">No repair requests</td></tr>
+            <tr><td colspan="5" class="text-center text-muted py-4">No {{ selected_repair_status_label|lower }} repair requests</td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
       <div class="card-footer d-flex justify-content-between align-items-center">
-        <small class="text-muted">Showing {{ recent_repairs|length }} of {{ total_repairs|default:0 }} requests</small>
+        <small class="text-muted">Showing {{ recent_repairs|length }} of {{ filtered_repairs_total|default:0 }} {{ selected_repair_status_label|lower }} requests</small>
         <a href="{% url 'repair_list' %}" class="view-all-link">View All Requests <i class="bi bi-arrow-right"></i></a>
       </div>
     </div>

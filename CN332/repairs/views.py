@@ -69,6 +69,9 @@ def repair_list_view(request):
     else:
         repairs = RepairRequest.objects.none()
     q = request.GET.get('q', '').strip()
+    selected_status = request.GET.get('status', 'ALL').strip().upper()
+    allowed_statuses = {choice[0] for choice in RepairRequest.STATUS_CHOICES}
+
     if q:
         if q.isdigit():
             repairs = repairs.filter(id=int(q))
@@ -76,8 +79,22 @@ def repair_list_view(request):
             repairs = repairs.filter(
                 Q(location__icontains=q) | Q(request_type__icontains=q) | Q(description__icontains=q)
             )
+
+    if selected_status in allowed_statuses:
+        repairs = repairs.filter(status=selected_status)
+    else:
+        selected_status = 'ALL'
+
     repairs = repairs.select_related('technician__user', 'resident').order_by('-created_at')
-    return render(request, 'repairs/repair_list.html', {'repairs': repairs, 'user': user})
+    status_filters = [('ALL', 'All Status')] + list(RepairRequest.STATUS_CHOICES)
+
+    return render(request, 'repairs/repair_list.html', {
+        'repairs': repairs,
+        'user': user,
+        'q': q,
+        'selected_status': selected_status,
+        'status_filters': status_filters,
+    })
 
 @login_required
 def repair_detail_view(request, pk):

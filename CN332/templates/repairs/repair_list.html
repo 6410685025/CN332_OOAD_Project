@@ -164,17 +164,193 @@
     background: #1d4ed8;
     color: white;
   }
+
+  @media (max-width: 992px) {
+    .repair-table thead th {
+      font-size: 0.7rem;
+      padding: 10px 12px;
+    }
+
+    .repair-table tbody td {
+      padding: 12px;
+      font-size: 0.85rem;
+    }
+
+    .request-id {
+      font-size: 0.9rem;
+    }
+
+    .type-badge,
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+    }
+
+    .technician-avatar {
+      width: 24px;
+      height: 24px;
+      font-size: 0.7rem;
+      margin-right: 6px;
+    }
+
+    .technician-name {
+      font-size: 0.85rem;
+    }
+
+    .btn-new-request {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .repair-table-card {
+      border-radius: 10px;
+    }
+
+    .repair-table {
+      font-size: 0.8rem;
+    }
+
+    .repair-table thead th {
+      font-size: 0.65rem;
+      padding: 8px 10px;
+    }
+
+    .repair-table tbody td {
+      padding: 10px 8px;
+      font-size: 0.8rem;
+    }
+
+    .request-id {
+      font-size: 0.85rem;
+    }
+
+    .type-badge,
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 6px;
+    }
+
+    .location-primary {
+      font-size: 0.85rem;
+    }
+
+    .location-secondary {
+      font-size: 0.75rem;
+    }
+
+    .technician-avatar {
+      width: 22px;
+      height: 22px;
+      font-size: 0.65rem;
+      margin-right: 4px;
+    }
+
+    .technician-name {
+      font-size: 0.8rem;
+    }
+
+    .search-input-group {
+      max-width: 100% !important;
+    }
+
+    .btn-new-request {
+      padding: 7px 12px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .card-body {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+      gap: 8px !important;
+    }
+
+    .search-input-group .form-control {
+      font-size: 16px;
+      min-height: 40px;
+    }
+
+    .btn-new-request {
+      width: 100%;
+      padding: 10px;
+      font-size: 0.9rem;
+      min-height: 40px;
+    }
+
+    .repair-table {
+      min-width: 500px;
+      font-size: 0.75rem;
+    }
+
+    .repair-table thead th {
+      font-size: 0.6rem;
+      padding: 6px 8px;
+    }
+
+    .repair-table tbody td {
+      padding: 8px;
+      font-size: 0.75rem;
+    }
+
+    .request-id {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .type-badge,
+    .status-badge {
+      font-size: 0.65rem;
+      padding: 2px 4px;
+    }
+
+    .location-primary {
+      font-size: 0.8rem;
+    }
+
+    .location-secondary {
+      font-size: 0.7rem;
+    }
+
+    .technician-avatar {
+      width: 20px;
+      height: 20px;
+      font-size: 0.6rem;
+      margin-right: 3px;
+    }
+
+    .technician-name {
+      font-size: 0.75rem;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex gap-2 mb-3 align-items-center">
   <form method="get" class="d-flex flex-grow-1 gap-2" role="search">
-    <div class="input-group search-input-group flex-grow-1" style="max-width: 400px;">
+    
+    <div class="input-group search-input-group flex-grow-1" style="max-width: 450px;">
       <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
-      <input type="search" name="q" class="form-control" placeholder="Search by ID, location, or type..." value="{{ request.GET.q }}">
+      <input type="search" name="q" id="searchInput" class="form-control" placeholder="Search by ID, location, or type..." value="{{ q }}">
     </div>
+
+    <select name="status" class="form-select" style="max-width: 220px;" onchange="this.form.submit()">
+      {% for status_value, status_label in status_filters %}
+      <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>{{ status_label }}</option>
+      {% endfor %}
+    </select>
+
   </form>
+  
   {% if user.is_resident or user.is_staff_member %}
   <a href="{% url 'create_repair' %}" class="btn btn-new-request">
     <i class="bi bi-plus-lg me-2"></i>New Request
@@ -196,7 +372,7 @@
       </thead>
       <tbody>
         {% for repair in repairs %}
-        <tr onclick="window.location.href='{% url 'repair_detail' repair.pk %}'">
+        <tr class="clickable-row" data-href="{% url 'repair_detail' repair.pk %}">
           <td>
             <span class="request-id">REQ-{{ repair.id|stringformat:"04d" }}</span>
           </td>
@@ -220,12 +396,24 @@
           <td>
             {% if repair.technician %}
             <div class="d-flex align-items-center">
-              <span class="technician-avatar">{{ repair.technician.user.get_full_name|default:repair.technician.user.username|slice:":1"|upper }}</span>
+              <span class="technician-avatar avatar-sm">
+                {% if repair.technician.user.profile_photo %}
+                  <img src="{{ repair.technician.user.profile_photo.url }}" alt="{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}" class="avatar-img">
+                {% else %}
+                  {{ repair.technician.user.get_full_name|default:repair.technician.user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
               <span class="technician-name">{{ repair.technician.user.get_full_name|default:repair.technician.user.username }}</span>
             </div>
             {% elif repair.assigned_staff %}
             <div class="d-flex align-items-center">
-              <span class="technician-avatar">{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username|slice:":1"|upper }}</span>
+              <span class="technician-avatar avatar-sm">
+                {% if repair.assigned_staff.user.profile_photo %}
+                  <img src="{{ repair.assigned_staff.user.profile_photo.url }}" alt="{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username }}" class="avatar-img">
+                {% else %}
+                  {{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username|slice:":1"|upper }}
+                {% endif %}
+              </span>
               <span class="technician-name">{{ repair.assigned_staff.user.get_full_name|default:repair.assigned_staff.user.username }}</span>
             </div>
             {% else %}
@@ -245,5 +433,41 @@
     </table>
   </div>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // 1. โค้ดเดิม: ทำให้คลิกแถวแล้วไปหน้า Detail
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function () {
+        const href = this.dataset.href;
+        if (href) window.location.href = href;
+      });
+    });
+
+    // 2. โค้ดที่เพิ่มใหม่: ระบบพิมพ์แล้วค้นหาอัตโนมัติ (Debounce)
+    const searchInput = document.getElementById('searchInput');
+    let typingTimer;
+    const doneTypingInterval = 600; // หน่วงเวลา 0.6 วินาทีหลังจากหยุดพิมพ์ ค่อย submit
+
+    if (searchInput) {
+      // ทำให้ Cursor กลับมาอยู่ที่เดิมตอนรีเฟรชหน้าเว็บเสร็จ
+      const strLength = searchInput.value.length;
+      if (strLength > 0) {
+        searchInput.focus();
+        searchInput.setSelectionRange(strLength, strLength);
+      }
+
+      // ตรวจจับการพิมพ์
+      searchInput.addEventListener('input', function () {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(function() {
+          searchInput.closest('form').submit();
+        }, doneTypingInterval);
+      });
+    }
+  });
+</script>
 {% endblock %}
+
+
 

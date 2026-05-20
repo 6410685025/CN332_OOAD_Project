@@ -155,6 +155,8 @@ def mark_picked_up_view(request, pk):
     package.status = 'PICKED_UP'
     package.picked_up_at = timezone.now()
     package.save()
+    
+    return redirect('package_list')
 
 @login_required
 @require_http_methods(["POST"])
