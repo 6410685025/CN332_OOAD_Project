@@ -1,4 +1,19 @@
 # CN332 OOAD Project 
+
+
+### 📄 Project Documentation
+
+📘 **System Design Document**  
+👉 [Design Document](https://github.com/6410685025/CN332_OOAD_Project/blob/main/Design_Homie.pdf)
+
+📘 **Account Access by Role Document**  
+👉 [Account Access by Role](https://github.com/6410685025/CN332_OOAD_Project/blob/main/AccountAccessByRole_Homie.pdf)
+
+🎥 **Project Demo Video**  
+👉 [Watch Demo](https://youtu.be/9Y_eJGH7YfE)
+
+---
+
 ### 📌 Iteration Timeline
 
 - **Iteration 1 – concept**  
@@ -18,11 +33,21 @@
   👉 [View Presentation](https://www.canva.com/design/DAHAnygwA58/4ijC4TgvWzVLvlnkJDayLw/view?utm_content=DAHAnygwA58&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h024b39c394)
 
 - **Iteration 6 –  Implement user / login**
-  👉 [View Presentation](https://www.canva.com/design/DAHBSm8C3ak/AmCgWYoRtgMes533DgR9CQ/view?utm_content=DAHBSm8C3ak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h17e7430860)
-  📌 **Presented in Class — 16 February 2026**
+
+   👉 [View Presentation](https://www.canva.com/design/DAHBSm8C3ak/AmCgWYoRtgMes533DgR9CQ/view?utm_content=DAHBSm8C3ak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h17e7430860)
+   📌 **Presented in Class — 16 February 2026**
 
 - **Iteration 7 –  Implement plan**
+
   👉 [View Presentation](https://www.canva.com/design/DAHDPyPor9A/rXBbGE3GPczLKtlRI2oZNQ/view?utm_content=DAHDPyPor9A&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h21a50d5239)
+  📌 **Presented in Class — 27 April 2026**
+
+- **Final Present**
+
+  👉 [View Presentation](https://canva.link/w55bfnkfulp7tdb)
+  📌 **Presented in Class — 18 May 2026**
+
+  
 
  
 
