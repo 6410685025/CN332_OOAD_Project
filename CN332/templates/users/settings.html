@@ -1070,8 +1070,8 @@
     
     // Update avatar if photo was uploaded
     if (user.profile_photo_url) {
-      const avatarWrapper = document.querySelector('.avatar-wrapper');
-      avatarWrapper.innerHTML = `<img id="avatarDisplay" src="${user.profile_photo_url}?t=${new Date().getTime()}" class="avatar-img" />`;
+      const avatar = document.getElementById('avatarDisplay');
+      avatar.innerHTML = `<img src="${user.profile_photo_url}?t=${new Date().getTime()}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
     }
   }
 
